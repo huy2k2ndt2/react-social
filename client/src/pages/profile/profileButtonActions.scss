@@ -1,0 +1,111 @@
+:root {
+  --small-green-circle: #78eea6;
+  --main-accent-color: #9b45e4;
+  --secondary-accent-color: #e13a9d;
+  --3rd-accent-color: #6c757d;
+  --4th-accent-color: #0b5ed7;
+  --5th-accent-color: #dc3545;
+}
+
+.card-profile__action {
+  display: flex;
+  justify-content: flex-start;
+  gap: 10px;
+
+  button {
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.15;
+    margin: 0;
+    overflow: visible;
+    -webkit-appearance: button;
+  }
+
+  button::-moz-focus-inner,
+  [type="button"]::-moz-focus-inner {
+    border-style: none;
+    padding: 0;
+  }
+
+  .card__action__button {
+    padding: 0.9em 1.3em;
+    text-transform: uppercase;
+    color: #fff;
+    border: none;
+    border-radius: 0.5em;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .card__action__button:before {
+    content: "";
+    position: absolute;
+    border-radius: 0.5em;
+    transition: all 0.35s ease-in-out;
+  }
+
+  .card__action__button:hover:before {
+    top: -6px;
+    bottom: -6px;
+    left: -6px;
+    right: -6px;
+  }
+
+  .card__action--friend {
+    background-color: var(--4th-accent-color);
+  }
+
+  .card__action--unfriend {
+    background-color: var(--5th-accent-color);
+  }
+
+  .card__action--follow {
+    background-color: var(--main-accent-color);
+  }
+
+  .card__action--addFriend {
+    background-color: var(--4th-accent-color);
+  }
+
+  .card__action--deleteRequestFriend {
+    background-color: var(--5th-accent-color);
+  }
+
+  .card__action--acceptFriendRequset {
+    background-color: var(--small-green-circle);
+  }
+
+  .card__action--refuseFriendRequset {
+    background-color: var(--5th-accent-color);
+  }
+
+  .card__action__button:hover:before {
+    border: 4px solid var(--main-accent-color);
+  }
+
+  .card__action--message {
+    background-color: var(--secondary-accent-color);
+  }
+
+  .card__action--message:hover:before {
+    border: 4px solid var(--secondary-accent-color);
+  }
+
+  @media (min-width: 425px) {
+    .card {
+      padding: 3em;
+    }
+
+    .card:after {
+      top: 50px;
+      right: 160px;
+    }
+
+    .card__info li {
+      padding: 1em;
+    }
+    .card__action__button {
+      padding: 0.9em 1.8em;
+    }
+  }
+}

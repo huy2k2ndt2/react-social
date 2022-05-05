@@ -1,0 +1,167 @@
+.my-btn,
+.my-btn-border,
+.btn-bell {
+  border-radius: 50%;
+  //   position: absolute;
+  //   top: 50%;
+  //   left: 50%;
+  //   transform: translate(-50%, -50%);
+  cursor: pointer;
+}
+.my-btn {
+  //   position: static;
+  height: 24px;
+  width: 24px;
+  display: inline-block;
+  box-shadow: -1px 2px 10px #999;
+  background: #ef7575;
+  animation-name: col;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+}
+.my-btn-border {
+  height: 20px;
+  width: 20px;
+  border: 1px solid #ef7575 !important;
+  animation-name: bord-pop-1;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  box-shadow: 2px 2px 5px #ccc, -2px -2px 5px #ccc;
+}
+.btn-bell {
+  color: white;
+  font-size: 20px;
+  animation-name: bell-ring-1;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+}
+
+@keyframes bord-pop-1 {
+  50% {
+    transform: scale(1.9);
+    opacity: 0.1;
+  }
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+
+@keyframes bord-pop {
+  0% {
+    transform: translate(-50%, -50%);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.9);
+    opacity: 0.1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.9);
+    opacity: 0;
+  }
+}
+@keyframes col {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+  10% {
+    transform: scale(1.1) translate(0, 0);
+  }
+  75% {
+    transform: scale(1) translate(0, 0);
+  }
+  100% {
+    transform: scale(1) translate(0, 0);
+  }
+}
+@keyframes col-1 {
+  0% {
+    transform: scale(1);
+  }
+  10% {
+    transform: scale(1.1);
+  }
+  75% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes bell-ring {
+  0% {
+    transform: translate(-50%, -50%);
+  }
+  5%,
+  15% {
+    transform: translate(-50%, -50%) rotate(25deg);
+  }
+  10%,
+  20% {
+    transform: translate(-50%, -50%) rotate(-25deg);
+  }
+  25% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+}
+
+@keyframes bell-ring-1 {
+  // 0% {
+  //   transform: ;
+  // }
+  5%,
+  15% {
+    transform: rotate(25deg);
+  }
+  10%,
+  20% {
+    transform: rotate(-25deg);
+  }
+  25% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.svg-notification {
+  color: white;
+  font-size: 20px;
+  animation-name: bell-ring-1;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+}
+
+.my-btn-border-notification {
+  z-index: -1;
+  border-radius: 50%;
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 100%;
+  border: 1px solid #ef7575 !important;
+  animation-name: bord-pop-1;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  box-shadow: 2px 2px 5px #ccc, -2px -2px 5px #ccc;
+}
+
+.my-btn-1 {
+  border-radius: 50%;
+  z-index: -1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  box-shadow: -1px 2px 10px #999;
+  background: #ef7575;
+  animation-name: col;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+}

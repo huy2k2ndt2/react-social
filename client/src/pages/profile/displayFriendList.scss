@@ -1,0 +1,127 @@
+.friend-container {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+
+  .our-friend {
+    padding: 20px 0 20px;
+    margin-bottom: 20px;
+    background-color: #f7f5ec;
+    text-align: center;
+    overflow: hidden;
+    position: relative;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 30px 60px -12px inset,
+      rgba(0, 0, 0, 0.3) 0px 18px 36px -18px inset;
+    cursor: pointer;
+
+    .picture {
+      display: inline-block;
+      height: 130px;
+      width: 130px;
+      margin-bottom: 10px;
+      z-index: 1;
+      position: relative;
+
+      &::before {
+        content: "";
+        width: 100%;
+        height: 0;
+        border-radius: 50%;
+        background-color: #1369ce;
+        position: absolute;
+        bottom: 135%;
+        right: 0;
+        left: 0;
+        opacity: 0.9;
+        transform: scale(3);
+        transition: all 0.3s linear 0s;
+      }
+      &::after {
+        content: "";
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background-color: #1369ce;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: -1;
+      }
+
+      img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        transform: scale(1);
+        transition: all 0.9s ease 0s;
+      }
+    }
+
+    &:hover {
+      .picture {
+        img {
+          box-shadow: 0 0 0 14px #f7f5ec;
+          transform: scale(0.7);
+        }
+
+        &::before {
+          height: 100%;
+        }
+      }
+
+      .social {
+        bottom: 0;
+      }
+    }
+
+    .friend-content {
+      .title {
+        display: block;
+        font-size: 15px;
+        color: #4e5052;
+        text-transform: capitalize;
+      }
+
+      .name {
+        text-align: center;
+        color: #333;
+        font-weight: 700;
+        font-size: 18px;
+        margin-bottom: 1.5rem;
+
+        &:hover {
+          // text-decoration: underline;
+          color: crimson;
+        }
+      }
+    }
+
+    .social {
+      width: 100%;
+      padding: 0;
+      margin: 0;
+      background-color: #1369ce;
+      position: absolute;
+      bottom: -100px;
+      left: 0;
+      transition: all 0.5s ease 0s;
+
+      li {
+        display: inline-block;
+
+        i {
+          display: block;
+          padding: 10px;
+          font-size: 17px;
+          color: white;
+          transition: all 0.3s ease 0s;
+          text-decoration: none;
+
+          &:hover {
+            color: #1369ce;
+            background-color: #f7f5ec;
+          }
+        }
+      }
+    }
+  }
+}

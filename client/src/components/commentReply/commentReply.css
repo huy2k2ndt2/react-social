@@ -1,0 +1,70 @@
+.commentReplyContainer {
+  display: flex;
+  align-items: flex-start;
+}
+
+.commentReplyImg {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 5px;
+}
+.commentReplyRight {
+  display: flex;
+  flex-direction: column;
+  margin-left: 5px;
+  flex: 1;
+}
+
+.commentReplyRightTop {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  position: relative;
+}
+
+.commentReplyUserName {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.commentReplyText {
+  font-size: 14px;
+}
+
+.commentReplyAction {
+  /* position: absolute;
+  transform: translateY(calc(100% + 5px));
+  bottom: 0; */
+  margin: 5px 10px;
+  display: flex;
+  align-items: center;
+  left: 5px;
+  font-size: 12px;
+  gap: 5px;
+  color: #b0b3ab;
+  font-weight: 600;
+}
+.commentReplyLike,
+.commentReplyDate {
+  cursor: pointer;
+}
+
+.commentReplyLike.like {
+  color: #2078f4;
+}
+
+.commentReplyLike:hover ~ span {
+  opacity: 1;
+  padding: 3px;
+}
+.commentReplyNumberLike {
+  border-radius: 50%;
+  color: #2078f4;
+  opacity: 0;
+  transition: 0.25s linear;
+}

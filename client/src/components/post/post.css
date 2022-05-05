@@ -1,0 +1,134 @@
+.post {
+  width: 100%;
+  border-radius: 10px;
+  -webkit-box-shadow: 0px 0px 16px -8px rgba(0, 0, 0, 0.68);
+  box-shadow: 0px 0px 16px -8px rgba(0, 0, 0, 0.68);
+  margin: 30px 0;
+}
+
+.postWrapper {
+  padding: 10px;
+}
+
+.postTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.postTopLeft {
+  display: flex;
+  align-items: center;
+}
+
+.postProfileImg {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.postUsername {
+  font-size: 15px;
+  font-weight: 500;
+  margin: 0 10px;
+}
+
+.postDate {
+  font-size: 12px;
+}
+
+.postCenter {
+  margin: 20px 0;
+}
+
+.postImgContainer {
+  margin-top: 20px;
+  width: 100%;
+  margin-top: 15px;
+  display: flex;
+  align-items: flex-start;
+  max-height: 500px;
+  flex-wrap: wrap;
+  overflow-y: auto;
+  /* align-items: center; */
+  justify-content: center;
+}
+
+.postImg {
+  /* width: calc(100% / 2); */
+  height: 250px;
+  padding: 0 5px;
+  margin-bottom: 10px;
+}
+.postImg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.postBottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.postBottomLeft {
+  display: flex;
+  align-items: center;
+}
+
+.likeIcon {
+  width: 24px;
+  height: 24px;
+  margin-right: 5px;
+  cursor: pointer;
+}
+
+.postLikeCounter {
+  font-size: 15px;
+}
+
+.postCommentText {
+  cursor: pointer;
+  border-bottom: 1px dashed gray;
+  font-size: 15px;
+}
+.postBottomRight {
+  display: flex;
+  align-items: flex-start;
+}
+
+.postCommentIcon {
+  margin-right: 5px;
+  cursor: pointer;
+}
+
+.commentContainer {
+  margin-top: 15px;
+}
+
+.displayComment {
+  display: flex;
+  flex-direction: column;
+}
+
+.CrudPost:hover {
+  background-color: rgb(194, 190, 190);
+  transition: 0.25s linear;
+}
+
+.postTopRight {
+  position: relative;
+}
+
+.CrudPost {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+

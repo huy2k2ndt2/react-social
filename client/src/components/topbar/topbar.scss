@@ -1,0 +1,146 @@
+.topbarContainer {
+  height: 65px;
+  width: 100%;
+  background-color: #1877f2;
+  display: flex;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.topbarLeft {
+  flex: 3;
+}
+
+.logo {
+  font-size: 24px;
+  margin-left: 20px;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+}
+
+.topbarCenter {
+  flex: 5;
+}
+
+.searchbar {
+  width: 100%;
+  height: 35px;
+  background-color: white;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.searchIcon {
+  cursor: pointer;
+  height: 100%;
+  font-size: 25px !important;
+  margin-left: 10px;
+}
+
+.searchInput {
+  padding: 0 10px;
+  flex: 1;
+  border: none;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.searchInput:focus {
+  outline: none;
+}
+
+.topbarRight {
+  flex: 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  color: white;
+}
+
+.topbarLink {
+  margin-right: 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.topbarIcons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.topbarIconItem {
+  position: relative;
+  cursor: pointer;
+}
+
+.topbarIconBadge {
+  width: 15px;
+  height: 15px;
+  background-color: red;
+  border-radius: 50%;
+  color: white;
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.topbarImg {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+  color: #fff;
+}
+
+.displayUsersSearch {
+  position: absolute;
+  width: 100%;
+  bottom: -5px;
+  transform: translateY(100%);
+  display: flex;
+  flex-direction: column;
+  background-image: linear-gradient(
+    64.3deg,
+    rgba(254, 122, 152, 0.81) 17.7%,
+    rgba(255, 206, 134, 1) 64.7%,
+    rgba(172, 253, 163, 0.64) 112.1%
+  );
+  border-radius: 5px;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
+.userSearchContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.25s linear;
+}
+
+.userSearchContainer:hover {
+  background-color: #dddddd;
+}
+.logout {
+  text-decoration: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  i {
+    width: 100%;
+    height: 100%;
+    font-size: 16px;
+    color: red;
+  }
+}

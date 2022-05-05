@@ -1,0 +1,6 @@
+//network
+export const SET_SOCKET = "SET_SOCKET";
+export const SET_USERS_ONLINE = "SET_USERS_ONLINE";
+export const ADD_USER_ONLINE = "ADD_USER_ONLINE";
+export const REMOVE_USER_OFFLINE = "REMOVE_USER_OFFLINE";
+export const RESET_NETWORK = "RESET_NETWORK";

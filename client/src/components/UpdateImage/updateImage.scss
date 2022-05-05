@@ -1,0 +1,30 @@
+.updateImage {
+  position: absolute;
+  z-index: 2;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  /* padding: 10px 0; */
+  background-color: rgb(197 185 185 / 70%);
+  transition: all 0.25s linear;
+  opacity: 0;
+  visibility: hidden;
+  height: 50px;
+
+  &.avatar {
+    justify-content: center;
+    align-items: center;
+
+    .shareOption {
+      margin-right: 0;
+    }
+  }
+
+  .shareOption {
+    border: 0;
+    outline: none;
+    background-color: transparent;
+  }
+}
