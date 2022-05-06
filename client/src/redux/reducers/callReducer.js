@@ -2,10 +2,8 @@ import {
   SET_CALL,
   END_CALL,
   SET_IS_ANSWER,
-  SET_IS_MIC,
   SET_FRIEND_INVITES,
-  SET_INFO_INVITE,
-  SET_IS_INVITED,
+  SET_USER_STREAM,
   REFUSE_INVITE,
   SET_ACCEPT_INVITE,
 } from "../actions";
@@ -22,12 +20,20 @@ const initialState = {
   fristLoadFriends: true,
   isCreate: null,
   roomCallId: null,
+  userStream: null,
 };
 
 const networkReducer = (state = initialState, action) => {
   const { type, payload } = action;
 
   switch (type) {
+    case SET_USER_STREAM: {
+      return {
+        ...state,
+        userStream: payload,
+      };
+    }
+
     case REFUSE_INVITE: {
       return {
         ...state,

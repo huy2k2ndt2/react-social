@@ -2,12 +2,10 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import { STORE_IMG } from "../../contants/imgContant";
-import { END_CALL, SET_IS_ANSWER } from "../../redux/actions";
+import { END_CALL, SET_IS_ANSWER, SET_USER_STREAM } from "../../redux/actions";
 
 import "./modalCall.scss";
 import NavModalCall from "./NavModalCall";
-import Avatar from "../avatar/Avatar";
-import { v4 as uuidv4 } from "uuid";
 import InviteFriend from "./InviteFriend";
 import ModalInviteCall from "../modalInviteCall/ModalInviteCall";
 import ModalCreateCall from "../modalCreateCall/ModalCreateCall";
@@ -20,9 +18,7 @@ const CallModal = () => {
   const [total, setTotal] = useState(0);
 
   const [isMic, setIsMic] = useState(true);
-  const [isYouVideo, setIsYouVideo] = useState(true);
-
-  const [uuidVideoPin, setUuidVideoPin] = useState("");
+  const [isOpenVideo, setOpenVideo] = useState(true);
 
   const {
     isVideo,
@@ -31,6 +27,7 @@ const CallModal = () => {
     isCreate,
     roomCallId,
     isSenderCall,
+    userStream,
   } = useSelector((state) => state.call);
 
   const { socket } = useSelector((state) => state.network);
@@ -48,16 +45,31 @@ const CallModal = () => {
   }, [total]);
 
   useEffect(() => {
-    peer?.on("call", (call) => {
-      openStream(isVideo, false).then((stream) => {
-        call.answer(stream);
-        call.on("stream", (remoteStream) => {
-          addVideoStream(remoteStream);
-        });
+    const getUserMedia =
+      navigator.getUserMedia ||
+      navigator.webkitGetUserMedia ||
+      navigator.mozGetUserMedia;
+
+    getUserMedia({ video: isVideo, audio: false }, (stream) => {
+      dispatch({
+        type: SET_USER_STREAM,
+        payload: stream,
       });
     });
-    return () => peer?.removeListener("call");
-  }, [peer, isVideo]);
+  }, [isVideo]);
+
+  useEffect(() => {
+    if (!peer || !userStream) return;
+
+    peer.on("call", (call) => {
+      call.answer(userStream);
+      call.on("stream", function (remoteStream) {
+        addVideoStream(remoteStream);
+      });
+    });
+
+    return () => peer.removeListener("call");
+  }, [userStream, peer]);
 
   useEffect(() => {
     const timerId = setInterval(() => setTotal((prev) => prev + 1), 1000);
@@ -68,34 +80,30 @@ const CallModal = () => {
     };
   }, []);
 
-  // useEffect(() => {
-  //   navigator.mediaDevices
-  //     .getUserMedia({
-  //       isVideo,
-  //       audio: true,
-  //     })
-  //     .then((stream) => {
-  //       const video = document.createElement("video");
-  //       const divEl = document.createElement("div");
-  //       divEl.classList.add(".video");
-  //       video.srcObject = stream;
-  //       video.play();
-  //       divEl.append(video);
-  //       const container = document.querySelector(".video-joins");
-  //       if (container) {
-  //         container.append(divEl);
-  //       }
+  useEffect(() => {
+    const handleSendStream = (peerId) => {
+      const call = peer.call(peerId, userStream);
 
-  //       addVideoStream(stream, true);
+      if (!isAnswer) {
+        dispatch({
+          type: SET_IS_ANSWER,
+          payload: true,
+        });
 
-  //       peer.on("call", (call) => {
-  //         call.answer(stream);
-  //         call.on("stream", (remoteStream) => {
-  //           addVideoStream(remoteStream);
-  //         });
-  //       });
-  //     });
-  // }, [peer, socket, isAnswer]);
+        addVideoStream(userStream , true);
+      }
+
+      if (!call) return;
+
+      call.on("stream", (remoteStream) => {
+        addVideoStream(remoteStream);
+      });
+    };
+
+    socket.on("user-joined-call", handleSendStream);
+
+    return () => socket?.off("user-joined-call", handleSendStream);
+  }, [socket, userStream, isAnswer]);
 
   useEffect(() => {
     if (!socket) return;
@@ -104,19 +112,6 @@ const CallModal = () => {
       toast.info(`${userReciverCall?.userName} got off the call`, {
         autoClose: 2000,
       });
-
-      // if (isVideo) {
-      //   const tracks = otherVideo.current.srcObject.getTracks();
-      //   tracks.forEach((track) => track.stop());
-      //   otherVideo.current.pause();
-
-      //   newCall.close();
-      //   setNewCall();
-      // }
-
-      // if (isAnswer) {
-      //   otherVideo.pause();
-      // }
     };
 
     const handleNotify = (message, isClose) => {
@@ -135,37 +130,17 @@ const CallModal = () => {
       handleNotify(`${userReciverCall?.userName} refuse the call`);
     });
 
-    const handleSendStream = (peerId) => {
-      openStream(isVideo, false).then((stream) => {
-        if (!isAnswer) {
-          addVideoStream(stream, true);
-          dispatch({
-            type: SET_IS_ANSWER,
-            payload: true,
-          });
-        }
-
-        const call = peer.call(peerId, stream);
-
-        call.on("stream", (remoteStream) => {
-          addVideoStream(remoteStream);
-        });
-      });
-    };
-
-    socket.on("user-joined-call", handleSendStream);
     socket.on("userCallOut", handleUserCallOut);
     socket.on("userCallBusy", (isClose) => {
       handleNotify(`${userReciverCall.userName} is on another call!`, isClose);
     });
 
     return () => {
-      socket?.off("user-joined-call", handleSendStream);
       socket?.off("userCallOut", handleUserCallOut);
       socket?.off("userCallBusy");
       socket?.off("callRefused");
     };
-  }, [socket, isAnswer]);
+  }, [socket, userReciverCall]);
 
   useEffect(() => {
     if (isAnswer) {
@@ -216,63 +191,18 @@ const CallModal = () => {
     });
   };
 
-  const toogleCamera = () => {
-    setIsYouVideo((prev) => !prev);
+  const toogleStream = (type) => {
+    if (!userStream) return;
 
-    // if (!isYouVideo) {
-    //   tracks.forEach((track) => track.stop());
-    // }
+    const track = userStream.getTracks().find((track) => track.kind === type);
 
-    // openStream(!isYouVideo, isMic).then((stream) => {
-    //   playStream(youVideo.current, stream);
+    if (!track) return;
 
-    //   if (!isYouVideo) {
-    //     const tracks = stream.getTracks();
-    //     setTracks(tracks);
-    //   }
-
-    //   // if (!isSenderCall) {
-    //   //   console.log("chay vao day");
-    //   //   const newCall = peer.call(peerId, stream);
-    //   //   newCall?.on("stream", (remoteStream) => {
-    //   //     console.log('nhan duoc stream');
-    //   //     // playStream(otherVideo.current, remoteStream);
-    //   //     otherVideo.current.srcObject = remoteStream;
-    //   //     otherVideo.current.play();
-    //   //   });
-
-    //   //   setNewCall(newCall);
-    //   // }
-    // });
-  };
-
-  const handlePinVideo = (video) => {
-    setUuidVideoPin(video.current.uuid);
-  };
-
-  const handleUnPin = () => {
-    setUuidVideoPin("");
-  };
-
-  const handleCheckIcon = (video) => {
-    if (!video || !video.current || !uuidVideoPin)
-      return (
-        <i
-          className="fa-solid fa-thumbtack icon_video"
-          onClick={() => handlePinVideo(video)}
-        ></i>
-      );
-    return uuidVideoPin === video.current.uuid ? (
-      <i
-        className="fa-solid fa-circle-xmark icon_video"
-        onClick={handleUnPin}
-      ></i>
-    ) : (
-      <i
-        className="fa-solid fa-thumbtack icon_video"
-        onClick={() => handlePinVideo(video)}
-      ></i>
-    );
+    if (track.enabled) {
+      track.enabled = false;
+    } else {
+      track.enabled = true;
+    }
   };
 
   return (
@@ -315,13 +245,18 @@ const CallModal = () => {
                   <img src={STORE_IMG + "chat.png"} alt="" />
                 </div>
 
-                <div className="icon-control" onClick={toogleCamera}>
-                  {isYouVideo ? (
+                <div
+                  className="icon-control"
+                  onClick={() => {
+                    toogleStream("video");
+                    setOpenVideo((prev) => !prev);
+                  }}
+                >
+                  {isOpenVideo ? (
                     <i className="fa-solid fa-video-slash"></i>
                   ) : (
                     <i className="fa-solid fa-video"></i>
                   )}
-                  {/* <img src={STORE_IMG + "disconnect.png"} alt="" /> */}
                 </div>
                 <div className="icon-control">
                   <img
@@ -333,7 +268,10 @@ const CallModal = () => {
                 </div>
                 <div
                   className="icon-mic icon-control"
-                  onClick={hanldeToogleMic}
+                  onClick={() => {
+                    toogleStream("audio");
+                    setIsMic((prev) => !prev);
+                  }}
                 >
                   {isMic ? (
                     <img src={STORE_IMG + "mic.png"} alt="" />

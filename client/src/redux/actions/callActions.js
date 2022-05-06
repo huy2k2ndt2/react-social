@@ -7,10 +7,4 @@ export const SET_INFO_INVITE = "SET_INFO_INVITE";
 export const SET_IS_INVITED = "SET_IS_INVITED";
 export const REFUSE_INVITE = "REFUSE_INVITE";
 export const SET_ACCEPT_INVITE = "SET_ACCEPT_INVITE";
-
-
-
-
-
-
-
+export const SET_USER_STREAM = "SET_USER_STREAM";

@@ -1,11 +1,17 @@
 const axios = require("axios");
 axios.defaults.baseURL = "http://localhost:8080/v1/api";
 
+// const { instrument } = require("@socket.io/admin-ui");
+
 const io = require("socket.io")(8900, {
   cors: {
     origin: "http://localhost:3000",
   },
 });
+
+// instrument(io, {
+//   auth: false,
+// });
 
 let users = [];
 
@@ -329,37 +335,27 @@ io.on("connection", (socket) => {
       return;
     }
 
-    if (isCreate) {
-      try {
-        
-         //add room
-        const reponse = await axios.put(`/conversation`, {
-          userCreateId: userSendCall,
-          members: [userSendCall, userReceiveCall],
-        });
-       
+    // if (isCreate) {
+    //   try {
+    //     //add room
+    //     const response = await axios.put(`/conversation`, {
+    //       roomCallId,
+    //     });
+    //   } catch (err) {
+    //     users = editData(users, userReceiveCall, { roomCallId: "" });
+    //     users = editData(users, userSendCall, { roomCallId: "" });
 
-       
+    //     const userReceivers = [userSendCall, userReceiveCall];
+    //     userReceivers.forEach((userId) => {
+    //       const user = findUser(userId);
+    //       if (user) {
+    //         io.to(user.socketId).emit("createRoomCallFail");
+    //       }
+    //     });
 
-          
-
-
-
-      } catch (err) {
-        users = editData(users, userReceiveCall, { roomCallId: "" });
-        users = editData(users, userSendCall, { roomCallId: "" });
-
-        const userReceivers = [userSendCall, userReceiveCall];
-        userReceivers.forEach((userId) => {
-          const user = findUser(userId);
-          if (user) {
-            io.socket(user.socketId).emit("createRoomCallFail");
-          }
-        });
-
-        return;
-      }
-    }
+    //     return;
+    //   }
+    // }
 
     users = editData(users, userReceiveCall, { roomCallId });
 

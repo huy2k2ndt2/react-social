@@ -14,7 +14,7 @@ conversationRouter.post(
   vertifyToken,
   conversationController.createConversation
 );
-conversationRouter.put("/", vertifyToken, conversationController.addRoomCallId);
+conversationRouter.put("/", conversationController.addRoomCallId);
 conversationRouter.get(
   "/get-status-conversation",
   vertifyToken,

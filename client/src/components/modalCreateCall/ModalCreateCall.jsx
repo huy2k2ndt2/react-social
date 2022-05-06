@@ -1,6 +1,11 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { END_CALL, SET_IS_ANSWER } from "../../redux/actions";
+import {
+  END_CALL,
+  SET_IS_ANSWER,
+  SET_USER_STREAM,
+  SET_USER_STREAMs,
+} from "../../redux/actions";
 import Avatar from "../avatar/Avatar";
 import { addVideoStream, openStream } from "../../helpers/media";
 
@@ -14,6 +19,7 @@ const ModalCreateCall = () => {
     isAnswer,
     roomCallId,
     isCreate,
+    userStream,
   } = useSelector((state) => state.call);
   const peer = useSelector((state) => state.peer);
   const { userCurrent } = useSelector((state) => state.auth);
@@ -40,9 +46,19 @@ const ModalCreateCall = () => {
 
     if (!socket) return;
 
-    openStream(isVideo, false).then((stream) => {
-      addVideoStream(stream, true);
-    });
+    // openStream(isVideo, false).then((stream) => {
+    //   // if (!userStream) {
+    //   //   dispatch({
+    //   //     type: SET_USER_STREAM,
+    //   //     payload: stream,
+    //   //   });
+    //   // }
+    //   addVideoStream(stream, true);
+    // });
+
+
+    addVideoStream(userStream, true);
+
 
     socket.emit("joinRoomCall", {
       userSendCall: userSendCall?._id,

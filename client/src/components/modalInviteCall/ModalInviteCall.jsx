@@ -4,8 +4,8 @@ import "./modalInviteCall.scss";
 import Avatar from "../avatar/Avatar";
 import {
   REFUSE_INVITE,
-  SET_ACCEPT_INVITE,
   SET_IS_ANSWER,
+  SET_USER_STREAM,
 } from "../../redux/actions";
 
 import { addVideoStream, openStream } from "../../helpers/media";
@@ -17,7 +17,7 @@ const ModalInviteCall = () => {
   const { userCurrent } = useSelector((state) => state.auth);
   const { socket } = useSelector((state) => state.network);
   const peer = useSelector((state) => state.peer);
-  const { isAnswer, roomCallId, isVideo, isCreate } = useSelector(
+  const { isAnswer, roomCallId, isVideo, isCreate, userStream } = useSelector(
     (state) => state.call
   );
 
@@ -45,6 +45,12 @@ const ModalInviteCall = () => {
     if (!socket) return;
 
     openStream(isVideo, false).then((stream) => {
+      // if (!userStream) {
+      //   dispatch({
+      //     type: SET_USER_STREAM,
+      //     payload: stream,
+      //   });
+      // }
       addVideoStream(stream, true);
     });
 
