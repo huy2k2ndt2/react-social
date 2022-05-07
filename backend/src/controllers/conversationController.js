@@ -93,6 +93,9 @@ const conversationController = {
         throw new Error(`Conversations in exits`);
       }
 
+      if (receiverId || userId) {
+      }
+
       const idx = conversationsDb.members.indexOf(receiverId || userId);
 
       const data = {};
@@ -111,12 +114,19 @@ const conversationController = {
 
       if (lastMessage) data.lastMessage = lastMessage;
 
-      await conversationsDb.updateOne({
-        $set: data,
-      });
+      const newConversation = await Conversation.findByIdAndUpdate(
+        conversationId,
+        {
+          $set: data,
+        },
+        {
+          new: true,
+        }
+      );
 
       res.json({
         message: "Update conversations Success",
+        newConversation,
       });
     } catch (err) {
       next(err);
@@ -184,15 +194,25 @@ const conversationController = {
     }
   },
 
-  addRoomCallId: async (req, res, next) => {
+  updateRoomCallId: async (req, res, next) => {
     try {
-      const { roomCallId } = req.body;
+      const { roomCallId, conversationId, isReset } = req.body;
 
-      if (!roomCallId) {
+      console.log(" req.body", req.body);
+
+      if (!roomCallId && !isReset) {
         throw new Error(`Missing room call Id`);
       }
 
-      await Conversation.findByIdAndUpdate({ $set: { roomCallId } });
+      const newConversation = await Conversation.findByIdAndUpdate(
+        conversationId,
+        {
+          $set: { roomCallId },
+        },
+        { new: true }
+      );
+
+      console.log("newConversation", newConversation);
 
       res.json({
         message: "Update room call conversation  Success",

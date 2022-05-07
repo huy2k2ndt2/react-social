@@ -18,7 +18,6 @@ export default function Conversation({ conversation }) {
   const { lastMessageConversation, statusConversations } = useSelector(
     (state) => state.chat
   );
-  const { usersOnline } = useSelector((state) => state.network);
 
   useEffect(() => {
     if (!reads || !reads.length || !members || !members.length) return;
@@ -43,18 +42,24 @@ export default function Conversation({ conversation }) {
   }, [statusConversations]);
 
   useEffect(() => {
+    // if (lastMessage?.[0] === "notify") return;
+
     if (
       !lastMessageConversation ||
       lastMessageConversation?.conversationId !== id
     )
       return;
 
+    if (lastMessageConversation.notify) {
+      return setMessage(lastMessageConversation.notify);
+    }
+
     const data =
       lastMessageConversation?.senderId === userCurrent?._id
         ? "You"
         : handleGetName();
 
-    setMessage(data + ": " + lastMessageConversation.message);
+    setMessage(data + ": " + lastMessageConversation.text);
   }, [lastMessageConversation]);
 
   useEffect(() => {
@@ -65,7 +70,7 @@ export default function Conversation({ conversation }) {
     setMessage(data + ": " + lastMessage[1]);
   }, [lastMessage]);
 
-  const handleGetName = (name) => {
+  const handleGetName = () => {
     const data = friendContact?.userName.split(" ");
     const length = data.length;
 
@@ -76,7 +81,6 @@ export default function Conversation({ conversation }) {
     return data[length - 1];
   };
 
-  handleGetName();
 
   return (
     <>
@@ -87,7 +91,9 @@ export default function Conversation({ conversation }) {
       <div className={`name ${!isRead ? "unread" : ""}`}>
         {friendContact?.userName}
       </div>
-      <div className={`message ${!isRead ? "unread" : ""}`}>{message}</div>
+      <div className={`message ${!isRead ? "unread" : ""}`}>
+        {lastMessage?.[0] === "notify" ? lastMessage?.[1] : message}
+      </div>
       {!isRead && <div className="NotificationCircle"></div>}
     </>
   );

@@ -16,17 +16,34 @@ export const replaceClass = (class1, class2, el) => {
   }
 };
 
-export const openStream = (isVideo, isMic = true) => {
+export const openStream = (isVideo) => {
   const config = {
     video: isVideo,
-    audio: isMic,
+    audio: true,
   };
 
-  return navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+  return navigator.mediaDevices.getUserMedia(config);
+};
+
+export const findStream = (streamId) => {
+  const listVideoContainer = Array.from(document.querySelectorAll(`.video`));
+
+  return listVideoContainer.find(
+    (el) => el.getAttribute("streamId") === streamId
+  );
 };
 
 export const addVideoStream = (stream, isYou = false) => {
+  if (!stream) return;
+
+  const divStream = findStream(stream.id);
+
+  if (divStream) return;
+
   const divEl = document.createElement("div");
+  const imgEl = document.createElement("img");
+  imgEl.style.display = "none";
+  divEl.setAttribute("streamId", stream?.id);
   const iEl = document.createElement("i");
   addClass("fa-solid fa-thumbtack icon_video", iEl);
   divEl.classList.add("video");
@@ -58,6 +75,7 @@ export const addVideoStream = (stream, isYou = false) => {
   };
 
   divEl.append(video);
+  divEl.append(imgEl);
   divEl.append(iEl);
 
   document.querySelector(".video-joins").append(divEl);
@@ -69,5 +87,29 @@ export const playStream = (video, stream) => {
   video.play();
   if (!video.uuid) {
     video.uuid = uuidv4();
+  }
+};
+
+export const handleUpdateUserCamera = (data) => {
+  const { img, streamId } = data;
+  const divEl = findStream(streamId);
+
+  if (divEl) {
+    const videoEl = divEl.querySelector("video");
+    const imgEl = divEl.querySelector("img");
+
+    if (videoEl && imgEl) {
+      if (img) {
+        videoEl.style.display = "none";
+        videoEl.pause();
+        imgEl.src = img;
+        imgEl.style.display = "block";
+      } else {
+        videoEl.style.display = "block";
+        videoEl.play();
+        imgEl.src = "";
+        imgEl.style.display = "none";
+      }
+    }
   }
 };

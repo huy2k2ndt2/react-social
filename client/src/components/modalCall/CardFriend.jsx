@@ -9,7 +9,9 @@ const CardFriend = ({ friend }) => {
 
   const { userCurrent } = useSelector((state) => state.auth);
   const { socket } = useSelector((state) => state.network);
-  const { isVideo, roomCallId } = useSelector((state) => state.call);
+  const { isVideo, roomCallId, conversationId } = useSelector(
+    (state) => state.call
+  );
 
   const timeRemaining = useRef();
 
@@ -51,6 +53,7 @@ const CardFriend = ({ friend }) => {
       receiverId: friend?._id,
       roomCallId,
       isCreate: false,
+      conversationId,
     });
 
     setIsDisable(true);

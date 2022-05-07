@@ -15,12 +15,12 @@ const initialState = {
   userReciverCall: null,
   isSenderCall: false,
   isAnswer: false,
-  isMic: true,
   friendInvites: [],
   fristLoadFriends: true,
   isCreate: null,
   roomCallId: null,
   userStream: null,
+  conversationId: null,
 };
 
 const networkReducer = (state = initialState, action) => {
@@ -70,10 +70,7 @@ const networkReducer = (state = initialState, action) => {
 
     case END_CALL: {
       return {
-        ...state,
-        isCall: false,
-        isVideo: null,
-        userSendCall: null,
+        ...initialState,
       };
     }
 

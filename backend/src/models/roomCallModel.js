@@ -3,9 +3,9 @@ const { Schema } = mongoose;
 
 const roomCallSchema = new Schema(
   {
-    members: {
-      type: Array,
-      default: [],
+    conversationId: {
+      type: String,
+      required: true,
     },
     isVideo: {
       type: Boolean,

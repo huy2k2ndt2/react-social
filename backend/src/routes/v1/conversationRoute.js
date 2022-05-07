@@ -6,7 +6,6 @@ const conversationRouter = express.Router();
 
 conversationRouter.post(
   "/update-conversation",
-  vertifyToken,
   conversationController.updateConversation
 );
 conversationRouter.post(
@@ -14,7 +13,8 @@ conversationRouter.post(
   vertifyToken,
   conversationController.createConversation
 );
-conversationRouter.put("/", conversationController.addRoomCallId);
+conversationRouter.put("/", conversationController.updateRoomCallId);
+
 conversationRouter.get(
   "/get-status-conversation",
   vertifyToken,

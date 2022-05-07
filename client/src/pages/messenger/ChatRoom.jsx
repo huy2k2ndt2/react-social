@@ -113,13 +113,10 @@ const ChatRoom = () => {
     const handleReceiveMessage = ({ newMessage, receiverId }) => {
       const { conversationId, text, senderId } = newMessage;
 
+
       dispatch({
         type: UPDATE_LAST_MESSAGE,
-        payload: {
-          conversationId,
-          senderId,
-          message: text,
-        },
+        payload: newMessage,
       });
 
       if (!conversationChat) return;
@@ -208,11 +205,7 @@ const ChatRoom = () => {
 
       dispatch({
         type: UPDATE_LAST_MESSAGE,
-        payload: {
-          conversationId: conversationChat?._id,
-          senderId: userCurrent?._id,
-          message: text,
-        },
+        payload: newMessage,
       });
 
       dispatch({

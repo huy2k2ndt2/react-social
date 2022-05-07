@@ -31,7 +31,8 @@ function App() {
     if (!socket) return;
 
     const handleConnectCall = (data) => {
-      const { isVideo, userSendCall, roomCallId, isCreate } = data;
+      const { isVideo, userSendCall, roomCallId, isCreate, conversationId } =
+        data;
 
       dispatch({
         type: SET_CALL,
@@ -42,6 +43,7 @@ function App() {
           roomCallId,
           isCreate,
           isSenderCall: false,
+          conversationId,
         },
       });
     };
@@ -144,6 +146,7 @@ function App() {
       socket.emit("userLogin", {
         userId: userCurrent?._id,
         friends: userCurrent?.friends,
+        userName: userCurrent?.userName,
       });
       socket.on("getUsers", handleSetUserOnline);
     }

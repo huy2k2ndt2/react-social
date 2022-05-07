@@ -11,6 +11,6 @@ routes.use("/comment", require("./commentRoute"));
 routes.use("/friend-request", require("./friendRequestRoute"));
 routes.use("/conversation", require("./conversationRoute"));
 routes.use("/notification", require("./notificationRoute"));
-// routes.use("/room-chat", require("./roomCallRoute"));
+routes.use("/room-chat", require("./roomCallRoute"));
 
 module.exports = routes;

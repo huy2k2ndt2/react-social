@@ -17,9 +17,14 @@ const ModalInviteCall = () => {
   const { userCurrent } = useSelector((state) => state.auth);
   const { socket } = useSelector((state) => state.network);
   const peer = useSelector((state) => state.peer);
-  const { isAnswer, roomCallId, isVideo, isCreate, userStream } = useSelector(
-    (state) => state.call
-  );
+  const {
+    isAnswer,
+    roomCallId,
+    isVideo,
+    isCreate,
+    userStream,
+    conversationId,
+  } = useSelector((state) => state.call);
 
   const dispatch = useDispatch();
 
@@ -36,23 +41,20 @@ const ModalInviteCall = () => {
     return () => clearTimeout(timer, handleCountTime);
   }, [countTime, isAnswer]);
 
-  const handleJoinCall = () => {
+  const handleJoinCall = async () => {
     dispatch({
       type: SET_IS_ANSWER,
       payload: true,
     });
 
-    if (!socket) return;
-
-    openStream(isVideo, false).then((stream) => {
-      // if (!userStream) {
-      //   dispatch({
-      //     type: SET_USER_STREAM,
-      //     payload: stream,
-      //   });
-      // }
-      addVideoStream(stream, true);
+    const stream = await openStream(isVideo);
+    dispatch({
+      type: SET_USER_STREAM,
+      payload: stream,
     });
+    addVideoStream(stream, true);
+
+    if (!socket) return;
 
     socket.emit("joinRoomCall", {
       userSendCall: userSendCall?._id,
@@ -60,6 +62,7 @@ const ModalInviteCall = () => {
       roomCallId,
       peerId: peer._id,
       isCreate: false,
+      conversationId,
     });
   };
 

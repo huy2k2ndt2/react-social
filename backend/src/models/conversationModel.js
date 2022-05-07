@@ -21,7 +21,6 @@ const conversationSchema = new Schema(
     },
     roomCallId: {
       type: String,
-      default: "",
     },
   },
   {

@@ -4,7 +4,6 @@ import moment from "moment";
 import { deleteDataAPI } from "../../api/fetchData";
 import { UPDATE_LAST_MESSAGE } from "../../redux/actions";
 
-
 const DisplayMessage = ({ updateConversation, messages, setMessages }) => {
   const { userCurrent } = useSelector((state) => state.auth);
   const { conversationChat } = useSelector((state) => state.chat);
@@ -69,32 +68,40 @@ const DisplayMessage = ({ updateConversation, messages, setMessages }) => {
     <>
       {messages.map((message) => (
         <div className={`messageContent`} key={message?._id} ref={scrollRef}>
-          {message?.text && (
+          {message?.notify ? (
+            <div className={`message notify`}>{message.notify}</div>
+          ) : (
+            message?.text && (
+              <div
+                className={`message ${
+                  message.senderId === userCurrent?._id ? "user" : "friend"
+                }`}
+              >
+                {message.text}
+              </div>
+            )
+          )}
+
+          {!message?.notify && (
             <div
-              className={`message ${
+              className={`imgsContainer ${!message?.text && "add-space"} ${
                 message.senderId === userCurrent?._id ? "user" : "friend"
               }`}
             >
-              {message.text}
+              <div className={`imgs `}>
+                {message.images.map((img) => (
+                  <div className="img" key={img.public_id}>
+                    <img src={img.url} />
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
           <div
-            className={`imgsContainer ${!message?.text && "add-space"} ${
-              message.senderId === userCurrent?._id ? "user" : "friend"
-            }`}
-          >
-            <div className={`imgs `}>
-              {message.images.map((img) => (
-                <div className="img" key={img.public_id}>
-                  <img src={img.url} />
-                </div>
-              ))}
-            </div>
-          </div>
-          <div
             className={`time ${
-              message.senderId === userCurrent?._id && "user"
+              (message?.notify && "notify") ||
+              (message.senderId === userCurrent?._id && "user")
             }`}
           >
             {moment(message?.createdAt).format("HH:mm")}

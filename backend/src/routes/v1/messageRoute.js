@@ -4,7 +4,7 @@ const { vertifyToken } = require("../../middlewares/vertifyToken");
 
 const messageRouter = express.Router();
 
-messageRouter.post("/", vertifyToken, messageController.createMessage);
+messageRouter.post("/", messageController.createMessage);
 
 messageRouter.get(
   "/:conversationId",

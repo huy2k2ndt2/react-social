@@ -37,9 +37,21 @@ export default function Messenger() {
             `/conversation/get-all-conversations`
           );
 
-          const { message, conversations } = response;
+          let { message, conversations } = response;
 
           // toast.success(message, { autoClose: 2000 });
+
+          conversations = conversations.map((conversation) => {
+            if (conversation.roomCallId) {
+              return {
+                ...conversation,
+                lastMessage: ["notify", `${"Conversation going on"}`],
+              };
+            }
+
+            return conversation;
+          });
+
           if (isMount) {
             dispatch({
               type: SET_LIST_CONVERSATION,

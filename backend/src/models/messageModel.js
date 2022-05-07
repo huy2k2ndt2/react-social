@@ -9,12 +9,12 @@ const messageSchema = new Schema(
     },
     senderId: {
       type: String,
-      require: true,
     },
     // receivers: { type: Array, default: [] },
     // reads: { type: Array, default: [] },
     images: { type: Array, default: [] },
     text: { type: String },
+    notify: { type: String },
     isDeleted: {
       type: Boolean,
       default: false,

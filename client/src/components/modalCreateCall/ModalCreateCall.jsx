@@ -20,6 +20,7 @@ const ModalCreateCall = () => {
     roomCallId,
     isCreate,
     userStream,
+    conversationId,
   } = useSelector((state) => state.call);
   const peer = useSelector((state) => state.peer);
   const { userCurrent } = useSelector((state) => state.auth);
@@ -30,7 +31,7 @@ const ModalCreateCall = () => {
     socket.emit("userRefuseCall", {
       userRefuseId: userCurrent?._id,
       receiverId: userSendCall?._id,
-      isCreate,
+      isCreate: true,
     });
 
     dispatch({
@@ -38,27 +39,20 @@ const ModalCreateCall = () => {
     });
   };
 
-  const handleAnswer = () => {
+  const handleAnswer = async () => {
     dispatch({
       type: SET_IS_ANSWER,
       payload: true,
     });
 
+    const stream = await openStream(isVideo);
+    dispatch({
+      type: SET_USER_STREAM,
+      payload: stream,
+    });
+    addVideoStream(stream, true);
+
     if (!socket) return;
-
-    // openStream(isVideo, false).then((stream) => {
-    //   // if (!userStream) {
-    //   //   dispatch({
-    //   //     type: SET_USER_STREAM,
-    //   //     payload: stream,
-    //   //   });
-    //   // }
-    //   addVideoStream(stream, true);
-    // });
-
-
-    addVideoStream(userStream, true);
-
 
     socket.emit("joinRoomCall", {
       userSendCall: userSendCall?._id,
@@ -66,6 +60,8 @@ const ModalCreateCall = () => {
       roomCallId,
       peerId: peer._id,
       isCreate: true,
+      conversationId,
+      isVideo
     });
   };
 

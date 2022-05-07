@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
-import { STORE_IMG } from "../../contants/imgContant";
+import { NO_AVATAR, STORE_IMG } from "../../contants/imgContant";
 import { END_CALL, SET_IS_ANSWER, SET_USER_STREAM } from "../../redux/actions";
 
 import "./modalCall.scss";
@@ -9,7 +9,12 @@ import NavModalCall from "./NavModalCall";
 import InviteFriend from "./InviteFriend";
 import ModalInviteCall from "../modalInviteCall/ModalInviteCall";
 import ModalCreateCall from "../modalCreateCall/ModalCreateCall";
-import { addVideoStream, openStream } from "../../helpers/media";
+import {
+  addVideoStream,
+  handleUpdateUserCamera,
+  openStream,
+  findStream,
+} from "../../helpers/media";
 
 const CallModal = () => {
   const [hours, setHours] = useState(0);
@@ -44,19 +49,19 @@ const CallModal = () => {
     setHours(parseInt(total / 3600));
   }, [total]);
 
-  useEffect(() => {
-    const getUserMedia =
-      navigator.getUserMedia ||
-      navigator.webkitGetUserMedia ||
-      navigator.mozGetUserMedia;
+  // useEffect(() => {
+  //   const getUserMedia =
+  //     navigator.getUserMedia ||
+  //     navigator.webkitGetUserMedia ||
+  //     navigator.mozGetUserMedia;
 
-    getUserMedia({ video: isVideo, audio: false }, (stream) => {
-      dispatch({
-        type: SET_USER_STREAM,
-        payload: stream,
-      });
-    });
-  }, [isVideo]);
+  //   getUserMedia({ video: isVideo, audio: true }, (stream) => {
+  //     dispatch({
+  //       type: SET_USER_STREAM,
+  //       payload: stream,
+  //     });
+  //   });
+  // }, [isVideo]);
 
   useEffect(() => {
     if (!peer || !userStream) return;
@@ -81,16 +86,27 @@ const CallModal = () => {
   }, []);
 
   useEffect(() => {
-    const handleSendStream = (peerId) => {
-      const call = peer.call(peerId, userStream);
+    const handleSendStream = async (peerId) => {
+      let stream;
+
+      if (!userStream) {
+        stream = await openStream(isVideo);
+        dispatch({
+          type: SET_USER_STREAM,
+          payload: stream,
+        });
+        addVideoStream(stream, true);
+      } else {
+        stream = userStream;
+      }
+
+      const call = peer.call(peerId, stream);
 
       if (!isAnswer) {
         dispatch({
           type: SET_IS_ANSWER,
           payload: true,
         });
-
-        addVideoStream(userStream , true);
       }
 
       if (!call) return;
@@ -108,10 +124,18 @@ const CallModal = () => {
   useEffect(() => {
     if (!socket) return;
 
-    const handleUserCallOut = () => {
-      toast.info(`${userReciverCall?.userName} got off the call`, {
-        autoClose: 2000,
+    const handleUserCallOut = (data) => {
+      console.log("data", data);
+
+      const { streamId, userName } = data;
+
+      toast.info(`${userName} got off the call`, {
+        autoClose: 1000,
       });
+
+      const divEl = findStream(streamId);
+
+      if (divEl) divEl.remove();
     };
 
     const handleNotify = (message, isClose) => {
@@ -130,7 +154,7 @@ const CallModal = () => {
       handleNotify(`${userReciverCall?.userName} refuse the call`);
     });
 
-    socket.on("userCallOut", handleUserCallOut);
+    socket.on("user-call-out", handleUserCallOut);
     socket.on("userCallBusy", (isClose) => {
       handleNotify(`${userReciverCall.userName} is on another call!`, isClose);
     });
@@ -141,6 +165,14 @@ const CallModal = () => {
       socket?.off("callRefused");
     };
   }, [socket, userReciverCall]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("update-user-camera", handleUpdateUserCamera);
+
+    return () => socket?.off("update-user-camera", handleUpdateUserCamera);
+  }, [socket]);
 
   useEffect(() => {
     if (isAnswer) {
@@ -164,30 +196,17 @@ const CallModal = () => {
   }, [isAnswer]);
 
   const endCall = () => {
-    // tracks &&
-    //   tracks.forEach((track) => {
-    //     track.stop();
-    //   });
+    const streamId = userStream.id;
+
+    const tracks = userStream?.getTracks();
+    tracks.forEach((track) => track.stop());
 
     dispatch({
       type: END_CALL,
     });
-    if (isAnswer) {
-      dispatch({
-        type: SET_IS_ANSWER,
-        payload: false,
-      });
-    }
-    socket?.emit("userOutCall", {
+    socket?.emit("end-call", {
       userOutCallId: userCurrent?._id,
-      roomCallId,
-    });
-  };
-
-  const hanldeToogleMic = () => {
-    setIsMic((prev) => !prev);
-    socket?.emit("userCallSettingMic", {
-      isMic: !isMic,
+      streamId,
     });
   };
 
@@ -198,10 +217,28 @@ const CallModal = () => {
 
     if (!track) return;
 
+    let data = {};
+
     if (track.enabled) {
+      if (type === "video") {
+        data.img = userCurrent?.profilePicture.length
+          ? userCurrent?.profilePicture[0]
+          : NO_AVATAR;
+      }
+
       track.enabled = false;
     } else {
       track.enabled = true;
+    }
+
+    if (type === "video") {
+      data.streamId = userStream?.id;
+      data.roomCallId = roomCallId;
+
+      socket.emit("user-turn-off-video", {
+        ...data,
+      });
+      handleUpdateUserCamera(data);
     }
   };
 

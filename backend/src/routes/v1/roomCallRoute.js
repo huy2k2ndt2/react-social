@@ -4,12 +4,12 @@ const { vertifyToken } = require("../../middlewares/vertifyToken");
 
 const roomCallRouter = express.Router();
 
-roomCallRouter.get("/:roomChatId", roomCallController.getRoomChat);
+roomCallRouter.get("/", roomCallController.getRoomChat);
 
 roomCallRouter.post("/", roomCallController.createRoomCall);
 
 roomCallRouter.put("/", roomCallController.addMember);
 
-roomCallRouter.delete("/:roomCallId", roomCallController.deleteRoomCall);
+roomCallRouter.delete("/", roomCallController.deleteRoomCall);
 
 module.exports = roomCallRouter;

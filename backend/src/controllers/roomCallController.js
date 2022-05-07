@@ -16,9 +16,16 @@ const roomCallController = {
   },
   getRoomChat: async (req, res, next) => {
     try {
-      const { roomCallId } = req.params;
+      const { roomCallId, conversationId } = req.query;
 
-      const roomCall = await RomCall.findById(roomCallId);
+      let roomCall;
+      if (roomCallId) {
+        roomCall = await RomCall.findById(roomCallId);
+      } else {
+        roomCall = await RomCall.findOne({
+          conversationId,
+        });
+      }
 
       res.json({
         message: "Get room Call not read Success",
@@ -31,15 +38,19 @@ const roomCallController = {
 
   deleteRoomCall: async (req, res, next) => {
     try {
-      const { isAllow, roomCallId, userId } = req.params;
+      const { isAllow, roomCallId, userId, conversationId } = req.query;
 
-      if (isgrantPermission) {
-        await RomCall.findByIdAndDelete(roomCallId);
+      if (isAllow) {
+        const roomCall = await RomCall.findOne({ roomCallId, conversationId });
+
+        await RomCall.deleteOne({ roomCallId, conversationId });
       } else {
-        const roomCall = await RomCall.findById(roomCallId);
+        const roomCall = await RomCall.findOne({ roomCallId, conversationId });
+
+        if (!roomCall) throw new Error("Not found room chat want delete");
 
         if (roomCall.userCreateId === userId) {
-          await RomCall.findByIdAndDelete(roomCallId);
+          await RomCall.deleteOne({ roomCallId, conversationId });
         } else {
           throw new Error("You do not have permission to delete any room");
         }
