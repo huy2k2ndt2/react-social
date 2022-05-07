@@ -18,9 +18,17 @@ const IconMessage = () => {
   const dispatch = useDispatch();
 
   const toogleMessage = () => {
+    const data = {
+      isChat: !isChat,
+    };
+
+    if (isChat) {
+      data.conversationChat = null;
+    }
+
     dispatch({
       type: SET_CHAT,
-      payload: !isChat,
+      payload: data,
     });
   };
 

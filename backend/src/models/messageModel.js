@@ -14,7 +14,8 @@ const messageSchema = new Schema(
     // reads: { type: Array, default: [] },
     images: { type: Array, default: [] },
     text: { type: String },
-    notify: { type: String },
+    isNotify: { type: Boolean, default: false },
+    notify: { type: Array },
     isDeleted: {
       type: Boolean,
       default: false,

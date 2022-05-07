@@ -1,6 +1,6 @@
 import { getDataAPI, postDataAPI } from "../../api/fetchData";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import Typing from "./Typing";
@@ -36,6 +36,16 @@ const ChatRoom = () => {
 
   const dispatch = useDispatch();
   const time = useFormatTime(friendChat);
+
+
+
+  // useEffect(() => {
+  //   const element = document.getElementById("chat");
+
+  //   console.log("element.scrollHeight", element.scrollHeight);
+  //   element.scrollTop = element.scrollHeight;
+  //   console.log("element.scrollTop", element.scrollTop);
+  // }, [messages]);
 
   useEffect(() => {
     let isMount = true;
@@ -113,7 +123,6 @@ const ChatRoom = () => {
     const handleReceiveMessage = ({ newMessage, receiverId }) => {
       const { conversationId, text, senderId } = newMessage;
 
-
       dispatch({
         type: UPDATE_LAST_MESSAGE,
         payload: newMessage,
@@ -149,18 +158,12 @@ const ChatRoom = () => {
     };
   }, [socket, conversationChat]);
 
-  const updateConversation = async ({
-    receiverId,
-    conversationId,
-    isRead,
-    lastMessage,
-  }) => {
+  const updateConversation = async ({ receiverId, conversationId, isRead }) => {
     try {
       const response = await postDataAPI(`/conversation/update-conversation`, {
         receiverId,
         conversationId,
         isRead,
-        lastMessage,
       });
 
       const { message } = response;
@@ -181,8 +184,6 @@ const ChatRoom = () => {
       const messageCreate = {
         conversationId: conversationChat?._id,
         senderId: userCurrent?._id,
-        // text,
-        // receiverId,
       };
 
       if (text) messageCreate.text = text;
@@ -197,10 +198,6 @@ const ChatRoom = () => {
         receiverId,
         conversationId: conversationChat?._id,
         isRead: false,
-        lastMessage: [
-          userCurrent?._id,
-          text ? text : ` sent ${files.length} photos`,
-        ],
       });
 
       dispatch({
@@ -253,7 +250,7 @@ const ChatRoom = () => {
           </>
         )}
       </div>
-      <div className="messages" id="chat">
+      <div className="messages" id="chat" >
         {conversationChat ? (
           <div className="messagesContainer">
             <DisplayMessage

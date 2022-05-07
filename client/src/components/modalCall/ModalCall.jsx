@@ -33,6 +33,7 @@ const CallModal = () => {
     roomCallId,
     isSenderCall,
     userStream,
+    conversationId,
   } = useSelector((state) => state.call);
 
   const { socket } = useSelector((state) => state.network);
@@ -48,20 +49,6 @@ const CallModal = () => {
     setMins(parseInt(total / 60));
     setHours(parseInt(total / 3600));
   }, [total]);
-
-  // useEffect(() => {
-  //   const getUserMedia =
-  //     navigator.getUserMedia ||
-  //     navigator.webkitGetUserMedia ||
-  //     navigator.mozGetUserMedia;
-
-  //   getUserMedia({ video: isVideo, audio: true }, (stream) => {
-  //     dispatch({
-  //       type: SET_USER_STREAM,
-  //       payload: stream,
-  //     });
-  //   });
-  // }, [isVideo]);
 
   useEffect(() => {
     if (!peer || !userStream) return;
@@ -86,7 +73,11 @@ const CallModal = () => {
   }, []);
 
   useEffect(() => {
-    const handleSendStream = async (peerId) => {
+    const handleSendStream = async (data) => {
+      const { peerId, userName } = data;
+
+      toast.info(`${userName} joined the call`, { autoClose: 1000 });
+
       let stream;
 
       if (!userStream) {
@@ -95,7 +86,6 @@ const CallModal = () => {
           type: SET_USER_STREAM,
           payload: stream,
         });
-        addVideoStream(stream, true);
       } else {
         stream = userStream;
       }
@@ -107,6 +97,7 @@ const CallModal = () => {
           type: SET_IS_ANSWER,
           payload: true,
         });
+        addVideoStream(stream, true);
       }
 
       if (!call) return;
@@ -122,11 +113,7 @@ const CallModal = () => {
   }, [socket, userStream, isAnswer]);
 
   useEffect(() => {
-    if (!socket) return;
-
     const handleUserCallOut = (data) => {
-      console.log("data", data);
-
       const { streamId, userName } = data;
 
       toast.info(`${userName} got off the call`, {
@@ -137,6 +124,14 @@ const CallModal = () => {
 
       if (divEl) divEl.remove();
     };
+
+    socket.on("user-call-out", handleUserCallOut);
+
+    return () => socket?.off("user-call-out", handleUserCallOut);
+  }, [socket]);
+
+  useEffect(() => {
+    if (!socket) return;
 
     const handleNotify = (message, isClose) => {
       toast.info(message, {
@@ -154,13 +149,11 @@ const CallModal = () => {
       handleNotify(`${userReciverCall?.userName} refuse the call`);
     });
 
-    socket.on("user-call-out", handleUserCallOut);
     socket.on("userCallBusy", (isClose) => {
       handleNotify(`${userReciverCall.userName} is on another call!`, isClose);
     });
 
     return () => {
-      socket?.off("userCallOut", handleUserCallOut);
       socket?.off("userCallBusy");
       socket?.off("callRefused");
     };
@@ -183,6 +176,8 @@ const CallModal = () => {
           socket?.emit("userCallNoReaction", {
             userCallId: userReciverCall._id,
             userSendCallId: userCurrent._id,
+            conversationId,
+            isVideo
           });
         }
 

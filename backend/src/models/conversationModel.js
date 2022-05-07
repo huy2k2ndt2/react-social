@@ -11,10 +11,6 @@ const conversationSchema = new Schema(
       type: Array,
       default: [],
     },
-    lastMessage: {
-      type: Array,
-      default: [],
-    },
     status: {
       type: Array,
       default: [],

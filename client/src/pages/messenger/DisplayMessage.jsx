@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
 import { deleteDataAPI } from "../../api/fetchData";
 import { UPDATE_LAST_MESSAGE } from "../../redux/actions";
+import DisplayMessageContent from "./DisplayMessageContent";
 
 const DisplayMessage = ({ updateConversation, messages, setMessages }) => {
   const { userCurrent } = useSelector((state) => state.auth);
@@ -10,12 +11,18 @@ const DisplayMessage = ({ updateConversation, messages, setMessages }) => {
 
   const { socket } = useSelector((state) => state.network);
 
-  const scrollRef = useRef();
-
   const dispatch = useDispatch();
 
+  const messageRef = useRef();
+
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messageRef.current) {
+      messageRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+        inline: "nearest",
+      });
+    }
   }, [messages]);
 
   const removeMessage = async (message) => {
@@ -67,20 +74,8 @@ const DisplayMessage = ({ updateConversation, messages, setMessages }) => {
   return (
     <>
       {messages.map((message) => (
-        <div className={`messageContent`} key={message?._id} ref={scrollRef}>
-          {message?.notify ? (
-            <div className={`message notify`}>{message.notify}</div>
-          ) : (
-            message?.text && (
-              <div
-                className={`message ${
-                  message.senderId === userCurrent?._id ? "user" : "friend"
-                }`}
-              >
-                {message.text}
-              </div>
-            )
-          )}
+        <div className={`messageContent`} key={message?._id} ref={messageRef}>
+          <DisplayMessageContent message={message} />
 
           {!message?.notify && (
             <div

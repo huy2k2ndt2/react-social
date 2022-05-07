@@ -70,7 +70,9 @@ const ButtonMessage = () => {
         setIsClick(true);
         dispatch({
           type: SET_CHAT,
-          payload: true,
+          payload: {
+            isChat: true,
+          },
         });
       }}
     >

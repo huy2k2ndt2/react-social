@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { getDataAPI } from "../../api/fetchData";
 import { NO_AVATAR } from "../../contants/imgContant";
 import "./displayFriendList.scss";
+import Carousel from "../../components/Carousel/Carousel";
 
 const DisplayFriendList = () => {
   const [friendList, setFriendList] = useState([]);
@@ -16,7 +17,9 @@ const DisplayFriendList = () => {
     const handleFetchFriends = async () => {
       if (userProfile && userProfile._id) {
         try {
-          const response = await getDataAPI(`/user/get-friends/${userProfile?._id}`);
+          const response = await getDataAPI(
+            `/user/get-friends/${userProfile?._id}`
+          );
 
           const { message, friends } = response;
           // toast.success(message, { autoClose: 2000 });
@@ -36,9 +39,9 @@ const DisplayFriendList = () => {
 
   return (
     <div className="row friend-container">
-      {friendList &&
-        friendList.map((friend) => (
-          <div className="col-12 col-sm-6 col-md-4 col-lg-3" key={friend?._id}>
+      <Carousel>
+        {friendList.map((friend) => (
+          <div className="col-12 col-sm-6 col-md-4 col-lg-3 carousel-item" key={friend?._id}>
             <div className="our-friend">
               <div className="picture">
                 <img
@@ -71,6 +74,7 @@ const DisplayFriendList = () => {
             </div>
           </div>
         ))}
+      </Carousel>
     </div>
   );
 };

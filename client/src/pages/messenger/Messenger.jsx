@@ -23,7 +23,6 @@ export default function Messenger() {
   const { conversationChat, conversationDisplays, conversationAccepts } =
     useSelector((state) => state.chat);
 
-  const { isCall } = useSelector((state) => state.call);
 
   const dispatch = useDispatch();
 

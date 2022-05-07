@@ -20,7 +20,7 @@ const roomCallController = {
 
       let roomCall;
       if (roomCallId) {
-        roomCall = await RomCall.findById(roomCallId);
+        roomCall = await RomCall.findOne({ roomCallId });
       } else {
         roomCall = await RomCall.findOne({
           conversationId,
@@ -28,7 +28,7 @@ const roomCallController = {
       }
 
       res.json({
-        message: "Get room Call not read Success",
+        message: "Get room Call Success",
         roomCall,
       });
     } catch (err) {

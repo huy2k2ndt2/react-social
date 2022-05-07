@@ -63,6 +63,8 @@ const ModalInviteCall = () => {
       peerId: peer._id,
       isCreate: false,
       conversationId,
+      userName: userCurrent?.userName,
+      streamId: stream.id,
     });
   };
 

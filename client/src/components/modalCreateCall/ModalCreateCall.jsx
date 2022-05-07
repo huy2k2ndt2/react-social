@@ -18,8 +18,6 @@ const ModalCreateCall = () => {
     isSenderCall,
     isAnswer,
     roomCallId,
-    isCreate,
-    userStream,
     conversationId,
   } = useSelector((state) => state.call);
   const peer = useSelector((state) => state.peer);
@@ -45,24 +43,31 @@ const ModalCreateCall = () => {
       payload: true,
     });
 
-    const stream = await openStream(isVideo);
-    dispatch({
-      type: SET_USER_STREAM,
-      payload: stream,
-    });
-    addVideoStream(stream, true);
+    let stream;
+    try {
+      stream = await openStream(isVideo);
 
-    if (!socket) return;
+      dispatch({
+        type: SET_USER_STREAM,
+        payload: stream,
+      });
+      addVideoStream(stream, true);
+      if (!socket) return;
 
-    socket.emit("joinRoomCall", {
-      userSendCall: userSendCall?._id,
-      userReceiveCall: userCurrent?._id,
-      roomCallId,
-      peerId: peer._id,
-      isCreate: true,
-      conversationId,
-      isVideo
-    });
+      socket.emit("joinRoomCall", {
+        userSendCall: userSendCall?._id,
+        userReceiveCall: userCurrent?._id,
+        roomCallId,
+        peerId: peer._id,
+        isCreate: true,
+        conversationId,
+        isVideo,
+        userName: userCurrent?.userName,
+        streamId: stream.id
+      });
+    } catch (err) {
+      console.log("err", { err });
+    }
   };
 
   return (

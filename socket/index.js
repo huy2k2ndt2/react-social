@@ -64,14 +64,9 @@ const handleCheckRoomCall = async (user) => {
               `/room-chat?isAllow=true&roomCallId=${roomCallId}&conversationId=${conversationId}`
             ),
             axios.post("/message", {
+              isNotify: true,
               conversationId,
-              notify,
-            }),
-            axios.post("conversation/update-conversation", {
-              conversationId,
-              isRead: false,
-              lastMessage: ["notify", notify],
-              userId: user.userId,
+              notify: [notify],
             }),
             axios.put("/conversation", {
               roomCallId: "",
@@ -79,11 +74,9 @@ const handleCheckRoomCall = async (user) => {
               isReset: true,
             }),
           ]);
-          responses.forEach((response) =>
-            console.log("response", response.data)
-          );
 
           const { newMessage } = responses[1].data;
+
           const {
             newConversation: { members },
           } = responses[2].data;
@@ -91,10 +84,12 @@ const handleCheckRoomCall = async (user) => {
           if (members) {
             members.forEach((memberId) => {
               const receiver = findUser(memberId);
-              io.to(receiver.socketId).emit("getMessage", {
-                receiverId: memberId,
-                newMessage,
-              });
+              if (receiver) {
+                io.to(receiver.socketId).emit("getMessage", {
+                  receiverId: memberId,
+                  newMessage,
+                });
+              }
             });
           }
 
@@ -110,9 +105,12 @@ const handleCheckRoomCall = async (user) => {
 const handleUserLogOut = (userDisconnect, socket) => {
   if (userDisconnect) {
     if (userDisconnect.roomCallId) {
-      socket
-        .to(userDisconnect.roomCallId.toString())
-        .emit("userCallOut", userDisconnect.userName);
+      const { roomCallId, userName, streamId } = userDisconnect;
+
+      socket.to(roomCallId.toString()).emit("user-call-out", {
+        userName: userName,
+        streamId,
+      });
 
       socket.leave(userDisconnect.roomCallId.toString());
     }
@@ -350,14 +348,15 @@ io.on("connection", (socket) => {
       sender,
       receiverId,
       roomCallId,
-
       conversationId,
+      streamId,
     } = data;
 
     if (isCreate) {
       users = editData(users, sender._id, {
         roomCallId,
         conversationId,
+        streamId,
       });
     }
 
@@ -369,6 +368,7 @@ io.on("connection", (socket) => {
           users = editData(users, sender._id, {
             roomCallId: "",
             conversationId: "",
+            streamId: "",
           });
         }
         socket.emit("userCallBusy", isCreate);
@@ -393,81 +393,14 @@ io.on("connection", (socket) => {
       if (isCreate) {
         users = editData(users, sender._id, {
           roomCallId: "",
+          conversationId: "",
+          streamId: "",
         });
       }
     }
   });
 
-  socket.on("userCallNoReaction", (data) => {
-    const { userCallId, userSendCallId } = data;
-
-    users = editData(users, userCallId, { roomCallId: "" });
-    users = editData(users, userSendCallId, { roomCallId: "" });
-  });
-
-  socket.on("joinRoomCall", async (data) => {
-    const {
-      userSendCall,
-      userReceiveCall,
-      roomCallId,
-      peerId,
-      isCreate,
-      conversationId,
-      isVideo,
-    } = data;
-
-    const receiver = findUser(userSendCall);
-
-    if (isCreate && !receiver) {
-      return;
-    }
-
-    if (isCreate) {
-      try {
-        //create new room in db
-        try {
-          const responses = Promise.all([
-            axios.post(`/room-chat`, {
-              roomCallId,
-              conversationId,
-              userCreateId: userSendCall,
-              isVideo,
-            }),
-            axios.put("/conversation", {
-              roomCallId,
-              conversationId,
-            }),
-          ]);
-        } catch (err) {
-          console.log("err", { err });
-        }
-
-        roomCalls.push({
-          roomCallId,
-          isVideo,
-        });
-      } catch (err) {
-        users = editData(users, userReceiveCall, { roomCallId: "" });
-        users = editData(users, userSendCall, { roomCallId: "" });
-
-        const userReceivers = [userSendCall, userReceiveCall];
-        userReceivers.forEach((userId) => {
-          const user = findUser(userId);
-          if (user) {
-            io.to(user.socketId).emit("createRoomCallFail");
-          }
-        });
-
-        return;
-      }
-    }
-
-    users = editData(users, userReceiveCall, { roomCallId, conversationId });
-
-    socket.join(roomCallId.toString());
-
-    socket.to(roomCallId.toString()).emit("user-joined-call", peerId);
-  });
+  // Not join call
 
   socket.on("userRefuseCall", (data) => {
     const { userRefuseId, receiverId, isCreate } = data;
@@ -492,6 +425,127 @@ io.on("connection", (socket) => {
     users = editData(users, userId, {
       roomCallId: "",
     });
+  });
+
+  socket.on("userCallNoReaction", async (data) => {
+    const { userCallId, userSendCallId, isVideo, conversationId } = data;
+
+    users = editData(users, userCallId, {
+      roomCallId: "",
+      conversationId: "",
+      roomCallId: "",
+      streamId: "",
+    });
+    users = editData(users, userSendCallId, {
+      roomCallId: "",
+      conversationId: "",
+      roomCallId: "",
+      streamId: "",
+    });
+
+    try {
+      const message = `${isVideo ? "Video" : "Audio"} call`;
+
+      const response = await axios.post("/message", {
+        isNotify: true,
+        senderId: userSendCallId,
+        notify: [message, "Missed " + message],
+        conversationId,
+      });
+
+      const { newMessage } = response.data;
+
+      [userCallId, userSendCallId].forEach((userId) => {
+        const receiver = findUser(userId);
+
+        if (receiver) {
+          io.to(receiver.socketId).emit("getMessage", {
+            receiverId: userId,
+            newMessage,
+          });
+        }
+      });
+    } catch (err) {
+      console.log("err", { err });
+    }
+  });
+
+  socket.on("joinRoomCall", async (data) => {
+    const {
+      userSendCall,
+      userReceiveCall,
+      roomCallId,
+      peerId,
+      isCreate,
+      conversationId,
+      isVideo,
+      userJoinCallId,
+      isNext,
+      userName,
+      streamId,
+    } = data;
+
+    if (!isNext) {
+      const receiver = findUser(userSendCall);
+
+      if (isCreate && !receiver) {
+        return;
+      }
+
+      if (isCreate) {
+        try {
+          //create new room in db
+          try {
+            const responses = Promise.all([
+              axios.post(`/room-chat`, {
+                roomCallId,
+                conversationId,
+                userCreateId: userSendCall,
+                isVideo,
+              }),
+              axios.put("/conversation", {
+                roomCallId,
+                conversationId,
+              }),
+            ]);
+          } catch (err) {
+            console.log("err", { err });
+          }
+
+          roomCalls.push({
+            roomCallId,
+            isVideo,
+          });
+        } catch (err) {
+          users = editData(users, userReceiveCall, { roomCallId: "" });
+          users = editData(users, userSendCall, { roomCallId: "" });
+
+          const userReceivers = [userSendCall, userReceiveCall];
+          userReceivers.forEach((userId) => {
+            const user = findUser(userId);
+            if (user) {
+              io.to(user.socketId).emit("createRoomCallFail");
+            }
+          });
+
+          return;
+        }
+      }
+
+      users = editData(users, userReceiveCall, {
+        roomCallId,
+        conversationId,
+        streamId,
+      });
+    } else {
+      users = editData(users, userJoinCallId, { roomCallId, conversationId });
+    }
+
+    socket.join(roomCallId.toString());
+
+    socket
+      .to(roomCallId.toString())
+      .emit("user-joined-call", { userName, peerId });
   });
 
   socket.on("end-call", (data) => {
@@ -527,12 +581,16 @@ io.on("connection", (socket) => {
   });
 
   //USER LOGOUT
-  socket.on("disconnect", () => {
+
+  socket.on("disconnecting", () => {
     const userDisconnect = users.find((user) => user.socketId === socket.id);
     handleCheckRoomCall(userDisconnect);
-
     handleUserLogOut(userDisconnect, socket);
+
+    socket.emit("get-stream");
   });
+
+  socket.on("disconnect", () => {});
 
   socket.on("userLogOut", (userLogOutId) => {
     const userDisconnect = users.find((user) => user.userId === userLogOutId);

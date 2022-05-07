@@ -1,4 +1,5 @@
 const Conversation = require("../models/conversationModel");
+const Message = require("../models/messageModel");
 const User = require("../models/userModel");
 
 const conversationController = {
@@ -36,6 +37,18 @@ const conversationController = {
         return friend;
       });
 
+      let lastMessages = await Promise.all(
+        conversationDb.map((conversation) => {
+          return Message.find({ conversationId: conversation._id })
+            .sort({ _id: -1 })
+            .limit(1);
+        })
+      );
+
+      lastMessages = lastMessages.reduce((prevState, messages) => {
+        return [...prevState, ...messages];
+      }, []);
+
       const friends = await Promise.all(
         friendsChatId.map((friendId) => User.findById(friendId))
       );
@@ -45,9 +58,14 @@ const conversationController = {
           conversationDb.members.includes(friend?._id)
         );
 
+        const lastMessage = lastMessages.find(
+          (message) => message.conversationId === conversation._id.toString()
+        );
+
         const data = {
           ...conversation._doc,
           friend,
+          lastMessage,
         };
 
         return data;
@@ -212,10 +230,9 @@ const conversationController = {
         { new: true }
       );
 
-      console.log("newConversation", newConversation);
-
       res.json({
-        message: "Update room call conversation  Success",
+        message: "Update room call conversation Success",
+        newConversation,
       });
     } catch (err) {
       next(err);

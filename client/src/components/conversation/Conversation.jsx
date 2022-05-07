@@ -4,15 +4,12 @@ import { useSelector } from "react-redux";
 import Avatar from "../avatar/Avatar";
 
 export default function Conversation({ conversation }) {
-  const {
-    _id: id,
-    friend: friendContact,
-    lastMessage,
-    reads,
-    members,
-  } = conversation;
+  const { _id: id, friend: friendContact, reads, members } = conversation;
   const [message, setMessage] = useState("");
   const [isRead, setIsRead] = useState(true);
+  const [lastMessage, setLastMessage] = useState(
+    () => conversation.lastMessage || ""
+  );
 
   const { userCurrent } = useSelector((state) => state.auth);
   const { lastMessageConversation, statusConversations } = useSelector(
@@ -42,32 +39,36 @@ export default function Conversation({ conversation }) {
   }, [statusConversations]);
 
   useEffect(() => {
-    // if (lastMessage?.[0] === "notify") return;
-
     if (
       !lastMessageConversation ||
       lastMessageConversation?.conversationId !== id
     )
       return;
 
-    if (lastMessageConversation.notify) {
-      return setMessage(lastMessageConversation.notify);
-    }
-
-    const data =
-      lastMessageConversation?.senderId === userCurrent?._id
-        ? "You"
-        : handleGetName();
-
-    setMessage(data + ": " + lastMessageConversation.text);
+    setLastMessage(lastMessageConversation);
   }, [lastMessageConversation]);
 
   useEffect(() => {
-    if (!lastMessage || !lastMessage.length) return;
+    if (!lastMessage) return;
+    const { isNotify, senderId, notify, text } = lastMessage;
 
-    const data = lastMessage[0] === userCurrent?._id ? "You" : handleGetName();
+    if (isNotify) {
+      let message;
+      if (senderId) {
+        const { userName } = friendContact;
 
-    setMessage(data + ": " + lastMessage[1]);
+        message =
+          userCurrent?._id === senderId
+            ? `${userName} missed your call`
+            : `You missed the call with ${userName}`;
+      } else {
+        message = notify[0];
+      }
+      return setMessage(message);
+    }
+    const data = senderId === userCurrent?._id ? "You" : handleGetName();
+
+    setMessage(data + ": " + text);
   }, [lastMessage]);
 
   const handleGetName = () => {
@@ -80,7 +81,6 @@ export default function Conversation({ conversation }) {
 
     return data[length - 1];
   };
-
 
   return (
     <>

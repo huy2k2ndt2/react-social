@@ -72,7 +72,7 @@ const chatReducer = (state = initialState, action) => {
     case SET_CHAT: {
       return {
         ...state,
-        isChat: payload,
+        ...payload,
       };
     }
 
