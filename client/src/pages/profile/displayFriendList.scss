@@ -1,8 +1,22 @@
 .friend-container {
   flex-wrap: nowrap;
-  overflow-x: auto;
+  // overflow-x: auto;
+
+  .slick-track {
+    display: flex !important;
+    gap: 10px;
+  }
+
+  .slick-list {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .slick-list::-webkit-scrollbar {
+    display: none;
+  }
 
   .our-friend {
+    width: 100%;
     padding: 20px 0 20px;
     margin-bottom: 20px;
     background-color: #f7f5ec;

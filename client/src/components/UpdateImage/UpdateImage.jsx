@@ -3,7 +3,7 @@ import "./updateImage.scss";
 import React from "react";
 import { PermMedia } from "@material-ui/icons";
 
-const UpdateImage = ({ setIsShowModal, text, id, type }) => {
+const UpdateImage = ({ text, id, type }) => {
   return (
     <div className={`updateImage ${type}`}>
       <button

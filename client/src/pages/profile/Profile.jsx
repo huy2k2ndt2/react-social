@@ -27,14 +27,11 @@ export default function Profile() {
 
   const { userCurrent } = useSelector((state) => state.auth);
   const { userProfile } = useSelector((state) => state.profile);
-  const { firstConnect, socket, firstGetData } = useSelector(
-    (state) => state.network
-  );
+ 
 
   const idBgc = useRef(uuidv4());
   const idAvatar = useRef(uuidv4());
 
-  const navigate = useNavigate();
   const dispatch = useDispatch();
 
   useEffect(() => {

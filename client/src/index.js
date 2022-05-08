@@ -10,13 +10,16 @@ import { BrowserRouter } from "react-router-dom";
 import store from "./redux/store";
 
 import "./index.css";
+import GlobalStyles from "./components/GlobalStyles";
 
 ReactDOM.render(
   <Provider store={store}>
     <React.StrictMode>
       <BrowserRouter>
         {/* <PersistGate loading={null} persistor={persistor}> */}
-        <App />
+        <GlobalStyles>
+          <App />
+        </GlobalStyles>
       </BrowserRouter>
       {/* </PersistGate> */}
       <ToastContainer />

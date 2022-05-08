@@ -171,13 +171,14 @@ const CallModal = () => {
     if (isAnswer) {
       setTotal(0);
     } else {
+
       const timerId = setTimeout(() => {
         if (isSenderCall) {
           socket?.emit("userCallNoReaction", {
             userCallId: userReciverCall._id,
             userSendCallId: userCurrent._id,
             conversationId,
-            isVideo
+            isVideo,
           });
         }
 
@@ -245,7 +246,7 @@ const CallModal = () => {
           display: isAnswer ? "none" : "flex",
         }}
       >
-        {!isAnswer && isCreate ? <ModalCreateCall /> : <ModalInviteCall />}
+        {!isAnswer && (isCreate ? <ModalCreateCall /> : <ModalInviteCall />)}
       </div>
       <div
         className="header"

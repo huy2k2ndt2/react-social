@@ -22,6 +22,7 @@ const Call = () => {
     isVideo,
     userReciverCall,
     roomCallId,
+    isAnswer,
     conversationId,
   } = useSelector((state) => state.call);
 
@@ -67,7 +68,6 @@ const Call = () => {
           streamId: stream.id,
         });
       } else {
-        console.log("chay vao day");
 
         dispatch({
           type: SET_CALL,
@@ -90,20 +90,22 @@ const Call = () => {
 
   useEffect(() => {
     if (!socket || !userCurrent || !isCall || !userStream) return;
-    socket?.emit("createCall", {
-      isVideo,
-      sender: {
-        profilePicture: userCurrent.profilePicture,
-        userName: userCurrent.userName,
-        _id: userCurrent?._id,
-      },
-      conversationId,
-      receiverId: userReciverCall?._id,
-      roomCallId,
-      isCreate: true,
-      streamId: userStream.id,
-    });
-  }, [socket, userCurrent, isCall, userStream]);
+    if (!isAnswer) {
+      socket?.emit("createCall", {
+        isVideo,
+        sender: {
+          profilePicture: userCurrent.profilePicture,
+          userName: userCurrent.userName,
+          _id: userCurrent?._id,
+        },
+        conversationId,
+        receiverId: userReciverCall?._id,
+        roomCallId,
+        isCreate: true,
+        streamId: userStream.id,
+      });
+    }
+  }, [socket, userCurrent, isCall, userStream, isAnswer]);
 
   return (
     <>

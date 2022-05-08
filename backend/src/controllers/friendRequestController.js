@@ -87,8 +87,6 @@ const friendRequestController = {
       const { userId } = req;
       const { friendRequestId, ...info } = req.body;
 
-      console.log("info", info);
-
       const friendRequest = await FriendRequest.findById(friendRequestId);
 
       if (friendRequest.senderId !== userId)

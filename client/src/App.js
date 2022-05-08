@@ -197,8 +197,6 @@ function App() {
       </Routes>
 
       {isCall && <ModalCall />}
-
-      {/* <ModalCall /> */}
     </>
   );
 }

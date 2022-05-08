@@ -1,15 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useSelector } from "react-redux";
 import Avatar from "../../components/avatar/Avatar";
 import ButtonSocials from "../../components/buttonSocials/ButtonSocials";
 import UpdateImage from "../../components/UpdateImage/UpdateImage";
-import useCheckOnline from "../../hooks/useCheckOnline";
 
 const ProfileLeft = ({ idAvatar }) => {
-  const { userProfile, isFriend } = useSelector((state) => state.profile);
+  const { userProfile } = useSelector((state) => state.profile);
   const { userCurrent } = useSelector((state) => state.auth);
-
-  const [isOnline, setIsOnline] = useCheckOnline(userProfile);
 
   return (
     <div className="left col-lg-4">

@@ -41,7 +41,7 @@ const DisplayFriendList = () => {
     <div className="row friend-container">
       <Carousel>
         {friendList.map((friend) => (
-          <div className="col-12 col-sm-6 col-md-4 col-lg-3 carousel-item" key={friend?._id}>
+          <div key={friend?._id} >
             <div className="our-friend">
               <div className="picture">
                 <img

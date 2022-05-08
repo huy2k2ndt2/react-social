@@ -407,6 +407,8 @@ io.on("connection", (socket) => {
 
     users = editData(users, userRefuseId, {
       roomCallId: "",
+      conversationId: "",
+      streamId: "",
     });
 
     const receiver = findUser(receiverId);
@@ -415,6 +417,8 @@ io.on("connection", (socket) => {
       if (isCreate) {
         users = editData(users, receiverId, {
           roomCallId: "",
+          conversationId: "",
+          streamId: "",
         });
       }
       io.to(receiver.socketId).emit("callRefused");
@@ -424,6 +428,8 @@ io.on("connection", (socket) => {
   socket.on("refuseInviteCall", (userId) => {
     users = editData(users, userId, {
       roomCallId: "",
+      conversationId: "",
+      streamId: "",
     });
   });
 
@@ -433,13 +439,11 @@ io.on("connection", (socket) => {
     users = editData(users, userCallId, {
       roomCallId: "",
       conversationId: "",
-      roomCallId: "",
       streamId: "",
     });
     users = editData(users, userSendCallId, {
       roomCallId: "",
       conversationId: "",
-      roomCallId: "",
       streamId: "",
     });
 
@@ -531,15 +535,12 @@ io.on("connection", (socket) => {
           return;
         }
       }
-
-      users = editData(users, userReceiveCall, {
-        roomCallId,
-        conversationId,
-        streamId,
-      });
-    } else {
-      users = editData(users, userJoinCallId, { roomCallId, conversationId });
     }
+    users = editData(users, userJoinCallId, {
+      roomCallId,
+      conversationId,
+      streamId,
+    });
 
     socket.join(roomCallId.toString());
 
@@ -566,6 +567,8 @@ io.on("connection", (socket) => {
 
       users = editData(users, userOutCallId, {
         roomCallId: "",
+        conversationId: "",
+        streamId: "",
       });
     }
   });

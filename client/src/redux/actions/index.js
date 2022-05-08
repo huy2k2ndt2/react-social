@@ -7,3 +7,4 @@ export * from "./notifycationActions";
 export * from "./profileActions";
 export * from "./callActions";
 export * from "./peerActions";
+export * from "./createRoomChatActions";

@@ -63,7 +63,7 @@ const ModalCreateCall = () => {
         conversationId,
         isVideo,
         userName: userCurrent?.userName,
-        streamId: stream.id
+        streamId: stream.id,
       });
     } catch (err) {
       console.log("err", { err });

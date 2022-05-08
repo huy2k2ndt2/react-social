@@ -5,12 +5,7 @@ const User = require("../models/userModel");
 const conversationController = {
   createConversation: async (req, res, next) => {
     try {
-      const { senderId, receiverId } = req.body;
-
-      const conversation = await new Conversation({
-        members: [senderId, receiverId],
-        reads: [true, true],
-      });
+      const conversation = await new Conversation(req.body);
 
       await conversation.save();
       res.json({
@@ -29,14 +24,6 @@ const conversationController = {
         members: { $in: [userId] },
       });
 
-      const friendsChatId = conversationDb.map((conversation) => {
-        const friend = conversation.members.find(
-          (memberId) => memberId !== userId
-        );
-
-        return friend;
-      });
-
       let lastMessages = await Promise.all(
         conversationDb.map((conversation) => {
           return Message.find({ conversationId: conversation._id })
@@ -49,22 +36,13 @@ const conversationController = {
         return [...prevState, ...messages];
       }, []);
 
-      const friends = await Promise.all(
-        friendsChatId.map((friendId) => User.findById(friendId))
-      );
-
-      const conversations = friends.map((friend) => {
-        const conversation = conversationDb.find((conversationDb) =>
-          conversationDb.members.includes(friend?._id)
-        );
-
+      const conversations = conversationDb.map((conversation) => {
         const lastMessage = lastMessages.find(
           (message) => message.conversationId === conversation._id.toString()
         );
 
         const data = {
           ...conversation._doc,
-          friend,
           lastMessage,
         };
 
@@ -215,8 +193,6 @@ const conversationController = {
   updateRoomCallId: async (req, res, next) => {
     try {
       const { roomCallId, conversationId, isReset } = req.body;
-
-      console.log(" req.body", req.body);
 
       if (!roomCallId && !isReset) {
         throw new Error(`Missing room call Id`);

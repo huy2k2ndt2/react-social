@@ -1,8 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getDataAPI } from "../../api/fetchData";
 import { SET_FRIEND_INVITES } from "../../redux/actions";
 import CardFriend from "./CardFriend";
+import Carousel from "../Carousel/Carousel";
+import "./InviteFriend.scss";
+import Slider from "react-slick";
 
 const InviteFriend = () => {
   const { userCall, isAnswer, fristLoadFriends, friendInvites } = useSelector(
@@ -51,17 +54,42 @@ const InviteFriend = () => {
     return () => (isMount = false);
   }, [userCurrent, isAnswer]);
 
+  const settings = useMemo(() => ({
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 3,
+    slidesToScroll: 1,
+  }));
+
+  const body = (className) =>
+    friendInvites.map((friend) => (
+      <div key={friend?._id}>
+        <div className={"friend_invite " + className}>
+          <CardFriend friend={friend} />
+        </div>
+      </div>
+    ));
+
   return (
     <div className="invite">
-      <p>Invite More People</p>
-      <div className="invite_content">
-        {friendInvites &&
-          friendInvites.map((friend) => (
-            <div className="friend_invite" key={friend?._id}>
-              <CardFriend friend={friend} />
+      <p className="title">Invite More People</p>
+
+      {friendInvites.length <= 3 ? (
+        <div className="invite_content">{body("no-slider")}</div>
+      ) : (
+        <Slider {...settings}>{body()}</Slider>
+      )}
+
+      {/* <Carousel>
+        {friendInvites.map((friend) => (
+          <div key={friend?._id}>
+            <div className="friend_invite">
+            <CardFriend friend={friend} />
             </div>
-          ))}
-      </div>
+          </div>
+        ))}
+      </Carousel> */}
     </div>
   );
 };

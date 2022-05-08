@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import Avatar from "../avatar/Avatar";
 import { format } from "timeago.js";
+import { NO_AVATAR } from "../../contants/imgContant";
 
 const CardFriend = ({ friend }) => {
   const [isDisable, setIsDisable] = useState(false);

@@ -7,6 +7,9 @@ const conversationSchema = new Schema(
       type: Array,
       default: [],
     },
+    image: {
+      type: Array,
+    },
     reads: {
       type: Array,
       default: [],
@@ -17,6 +20,18 @@ const conversationSchema = new Schema(
     },
     roomCallId: {
       type: String,
+    },
+    name: {
+      type: String,
+      default: "",
+    },
+    desc: {
+      type: String,
+      default: "",
+    },
+    isMultiple: {
+      type: Boolean,
+      default: false,
     },
   },
   {

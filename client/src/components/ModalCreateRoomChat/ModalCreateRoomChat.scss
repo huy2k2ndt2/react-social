@@ -1,0 +1,119 @@
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.create_room_modal {
+  color: #333;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9;
+  background: #0008;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .container {
+    width: 70%;
+    height: 500px;
+    border: 1px solid #999;
+    background-color: #fff;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .content {
+    flex: 1;
+    display: flex;
+    overflow-y: hidden;
+
+    .content-left,
+    .content-right {
+      height: 100%;
+      overflow-y: auto;
+    }
+
+    .content-left {
+      width: 300px;
+      border-right: 1px solid #999;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      padding-right: 10px;
+
+      .list_friend {
+        flex: 1;
+        overflow-y: auto;
+      }
+    }
+    .content-right {
+      flex: 1;
+      padding: 0 10px;
+
+      .members {
+        margin: 10px 0;
+      }
+
+      .display_room_avatar {
+        margin: 10px 0;
+        border-radius: 5px;
+        img {
+          border-radius: inherit;
+          width: 100%;
+          height: 200px;
+          object-fit: cover;
+        }
+      }
+    }
+
+    .list_friend {
+      margin-bottom: 0;
+      color: #333;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+
+      .friend {
+        display: flex;
+        align-items: center;
+
+        .friend-info {
+          flex: 1;
+          display: flex;
+          align-items: center;
+
+          p {
+            margin-left: 10px;
+          }
+
+          img {
+            width: 64px;
+            height: 64px;
+            object-fit: cover;
+          }
+        }
+
+        .button-actions {
+          button {
+            padding: 3px 5px;
+          }
+        }
+      }
+    }
+  }
+
+  .footer {
+    padding: 10px 0;
+    border-top: 1px solid #999;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+  }
+}
