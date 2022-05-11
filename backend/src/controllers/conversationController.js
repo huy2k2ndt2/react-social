@@ -74,41 +74,15 @@ const conversationController = {
   },
   updateConversation: async (req, res, next) => {
     try {
-      const {
-        userId,
-        receiverId,
-        conversationId,
-        isRead,
-        lastMessage,
-        isStatus,
-      } = req.body;
+      const { conversationId, ...data } = req.body;
+
+      console.log("data", data);
 
       const conversationsDb = await Conversation.findById(conversationId);
 
       if (!conversationsDb) {
         throw new Error(`Conversations in exits`);
       }
-
-      if (receiverId || userId) {
-      }
-
-      const idx = conversationsDb.members.indexOf(receiverId || userId);
-
-      const data = {};
-
-      if (isRead === false || isRead === true) {
-        const reads = [...conversationsDb.reads];
-        reads[idx] = isRead;
-        data.reads = reads;
-      }
-
-      if (isStatus) {
-        const status = [...conversationsDb.status];
-        status[idx] = isStatus;
-        data.status = status;
-      }
-
-      if (lastMessage) data.lastMessage = lastMessage;
 
       const newConversation = await Conversation.findByIdAndUpdate(
         conversationId,
@@ -169,8 +143,8 @@ const conversationController = {
       if (!conversationDb) {
         conversationDb = await new Conversation({
           members: [userCurrentId, receiverId],
-          reads: [true, true],
-          status: [true, isFriend === "true" ? true : false],
+          reads: [userCurrentId, receiverId],
+          status: [userCurrentId],
         });
 
         await conversationDb.save();

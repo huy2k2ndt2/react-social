@@ -1,15 +1,25 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Avatar from "../avatar/Avatar";
 import { getDataAPI } from "../../api/fetchData";
 import { NO_AVATAR } from "../../contants/imgContant";
+import { UPDATE_CONVERSATION } from "../../redux/actions";
+import { v4 as uuidv4 } from "uuid";
 
 export default function Conversation({ conversation }) {
-  const { _id: id, reads, members, isMultiple, name, image } = conversation;
+  const {
+    _id: id,
+    reads,
+    members,
+    isMultiple,
+    name,
+    image,
+    listMembers,
+    images,
+    nameConversation,
+  } = conversation;
   const [message, setMessage] = useState("");
-  const [nameConversation, setNameConversation] = useState("");
-  const [imgConversation, setImgConversation] = useState("");
   const [isRead, setIsRead] = useState(true);
   const [lastMessage, setLastMessage] = useState(
     () => conversation.lastMessage || ""
@@ -20,91 +30,103 @@ export default function Conversation({ conversation }) {
     (state) => state.chat
   );
 
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    let isMount = true;
+    if (!conversation) return;
+
+    const handeGetInfoMembers = async () => {
+      const listMemberIds = members.filter(
+        (memberId) => memberId !== userCurrent?._id
+      );
+
+      const responses = await Promise.all(
+        listMemberIds.map((memberId) => getDataAPI(`/user?userId=${memberId}`))
+      );
+
+      const listMembers = responses.map((response) => {
+        const { user } = response;
+        return user;
+      });
+
+      if (isMount) {
+        dispatch({
+          type: UPDATE_CONVERSATION,
+          payload: {
+            conversationId: conversation?._id,
+            listMembers,
+          },
+        });
+      }
+    };
+
+    if (!listMembers) {
+      handeGetInfoMembers();
+    }
+
+    return () => (isMount = false);
+  }, [conversation, listMembers]);
+
   useEffect(() => {
     let isMount = true;
     if (!conversation || !userCurrent) return;
 
-    const handleSetInfoConversation = async () => {
+    const handleSetImgConversation = async () => {
       if (isMultiple) {
         //get img conversation
         if (image.length) {
-          if (isMount) setImgConversation([image[0]]);
-        } else {
-          const length = members.length;
-          const friendIds = [];
-          for (let i = 0; i < 2; ++i) {
-            let check;
-            do {
-              const idxRamdom = Math.floor(Math.random() * length);
-              if (!friendIds.includes(members[idxRamdom])) {
-                friendIds.push(members[idxRamdom]);
-                check = true;
-              }
-            } while (!check);
-          }
-
-          const responses = await Promise.all(
-            friendIds.map((friendId) => getDataAPI(`/user?userId=${friendId}`))
-          );
-
-          const images = responses.map((response) => {
-            const {
-              user: { profilePicture },
-            } = response;
-
-            return profilePicture.length ? profilePicture[0] : NO_AVATAR;
-          });
-
-          setImgConversation(images);
-        }
-
-        setNameConversation(name);
-      } else {
-        const friendChatId = members.find(
-          (memberId) => memberId !== userCurrent?._id
-        );
-
-        const { user } = await getDataAPI(`/user?userId=${friendChatId}`);
-
-        const { profilePicture, userName } = user;
-
-        if (isMount) {
-          setImgConversation([
-            profilePicture && profilePicture.length
-              ? profilePicture[0]
-              : NO_AVATAR,
-          ]);
-          setNameConversation(userName);
+          if (isMount)
+            dispatch({
+              type: UPDATE_CONVERSATION,
+              payload: {
+                conversationId: conversation?._id,
+                images: [
+                  {
+                    src: image[0],
+                    key: uuidv4(),
+                  },
+                ],
+              },
+            });
         }
       }
     };
 
-    handleSetInfoConversation();
+    if (!images) handleSetImgConversation();
 
     return () => (isMount = false);
-  }, [conversation, userCurrent]);
+  }, [conversation, userCurrent, images]);
 
   useEffect(() => {
-    if (!reads || !reads.length || !members || !members.length) return;
-    const idx = members.indexOf(userCurrent?._id);
-    setIsRead(reads[idx]);
-  }, [reads]);
+    if (!conversation || !userCurrent || nameConversation) return;
 
-  useEffect(() => {
-    if (!statusConversations || !statusConversations.length) return;
-
-    const conversation = statusConversations.find(
-      (statusConversation) => statusConversation.conversationId === id
-    );
-
-    if (!conversation) return;
-
-    if (isRead === conversation.isRead) {
-      return;
+    if (isMultiple) {
+      dispatch({
+        type: UPDATE_CONVERSATION,
+        payload: {
+          conversationId: conversation?._id,
+          nameConversation: name,
+        },
+      });
+    } else {
+      if (!listMembers) return;
+      const { userName } = listMembers[0];
+      dispatch({
+        type: UPDATE_CONVERSATION,
+        payload: {
+          conversationId: conversation?._id,
+          nameConversation: userName,
+        },
+      });
     }
+  }, [conversation, userCurrent, nameConversation, listMembers, name]);
 
-    setIsRead(conversation.isRead);
-  }, [statusConversations]);
+  useEffect(() => {
+    if (!reads || !userCurrent) return;
+
+    setIsRead(() => reads.includes(userCurrent._id));
+  }, [reads, userCurrent]);
 
   useEffect(() => {
     if (
@@ -116,54 +138,123 @@ export default function Conversation({ conversation }) {
     setLastMessage(lastMessageConversation);
   }, [lastMessageConversation]);
 
-  // useEffect(() => {
-  //   if (!lastMessage) return;
-  //   const { isNotify, senderId, notify, text } = lastMessage;
+  useEffect(() => {
+    if (!listMembers || !userCurrent || (images && images.length > 0)) return;
 
-  //   if (isNotify) {
-  //     let message;
-  //     if (senderId) {
-  //       const { userName } = friendContact;
+    let listImages = [];
 
-  //       message =
-  //         userCurrent?._id === senderId
-  //           ? `${userName} missed your call`
-  //           : `You missed the call with ${userName}`;
-  //     } else {
-  //       message = notify[0];
-  //     }
-  //     return setMessage(message);
-  //   }
-  //   const data = senderId === userCurrent?._id ? "You" : handleGetName();
+    if (isMultiple) {
+      const ids = [];
+      const length = members.length;
+      for (let i = 0; i < 2; ++i) {
+        let check;
+        do {
+          const idxRamdom = Math.floor(Math.random() * length);
+          if (!ids.includes(members[idxRamdom])) {
+            ids.push(members[idxRamdom]);
+            check = true;
+          }
+        } while (!check);
+      }
 
-  //   setMessage(data + ": " + text);
-  // }, [lastMessage]);
+      listImages = ids.map((id) => {
+        let img;
 
-  // const handleGetName = () => {
-  //   const data = friendContact?.userName.split(" ");
-  //   const length = data.length;
+        if (id === userCurrent?._id) {
+          img = userCurrent.profilePicture;
+        } else {
+          img = listMembers.find((member) => member?._id === id).profilePicture;
+        }
 
-  //   if (!data || !length) {
-  //     return friendContact?.userName || "";
-  //   }
+        return {
+          src: img && img.length ? img[0] : NO_AVATAR,
+          key: uuidv4(),
+        };
+      });
+    } else {
+      const { profilePicture } = listMembers[0];
 
-  //   return data[length - 1];
-  // };
+      listImages.push({
+        src: profilePicture.length ? profilePicture[0] : NO_AVATAR,
+        key: uuidv4(),
+      });
+    }
+
+    dispatch({
+      type: UPDATE_CONVERSATION,
+      payload: {
+        conversationId: conversation?._id,
+        images: listImages,
+      },
+    });
+  }, [listMembers, members, images, userCurrent]);
+
+  useEffect(() => {
+    if (!lastMessage || !listMembers || !userCurrent) return;
+    const { isNotify, senderId, notify, text } = lastMessage;
+
+    // if (isNotify) {
+    //   let message;
+    //   if (senderId) {
+    //     const { userName } = friendContact;
+
+    //     message =
+    //       userCurrent?._id === senderId
+    //         ? `${userName} missed your call`
+    //         : `You missed the call with ${userName}`;
+    //   } else {
+    //     message = notify[0];
+    //   }
+    //   return setMessage(message);
+    // }
+
+    let data;
+
+    if (senderId === userCurrent?._id) {
+      data = "You";
+    } else {
+      const sender = listMembers.find((member) => member?._id === senderId);
+      data = handleGetName(sender?.userName);
+    }
+
+    setMessage(data + ": " + text);
+  }, [lastMessage, listMembers]);
+
+  const handleGetName = (name) => {
+    const data = name.split(" ");
+    const length = data.length;
+
+    if (!data || !length) {
+      return name?.userName || "";
+    }
+
+    return data[length - 1];
+  };
 
   return (
-    <></>
-    // <>
-    //   <div className="pic banner">
-    //     <Avatar user={friendContact} width="64px" height="64px" link={false} />
-    //   </div>
+    <>
+      <div className="pic banner">
+        {/* <Avatar user={friendContact} width="64px" height="64px" link={false} /> */}
 
-    //   <div className={`name ${!isRead ? "unread" : ""}`}>
-    //     {nameConversation}
-    //   </div>
-    //   <div className={`message ${!isRead ? "unread" : ""}`}>
-    //     {lastMessage?.[0] === "notify" ? lastMessage?.[1] : message}
-    //   </div>
-    //   {!isRead && <div className="NotificationCircle"></div>}
-    // </>
+        {images &&
+          (images.length === 1 ? (
+            <img className="one-img" src={images[0].src} alt="" />
+          ) : (
+            <div className="multiple-img">
+              {images.map((img) => (
+                <img src={img.src} key={img.key} />
+              ))}
+            </div>
+          ))}
+      </div>
+
+      <div className={`name ${!isRead ? "unread" : ""}`}>
+        {nameConversation}
+      </div>
+      <div className={`message ${!isRead ? "unread" : ""}`}>
+        {lastMessage?.[0] === "notify" ? lastMessage?.[1] : message}
+      </div>
+      {!isRead && <div className="NotificationCircle"></div>}
+    </>
   );
 }

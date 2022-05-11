@@ -10,13 +10,9 @@ import Call from "./Call";
 
 import {
   SET_FILES,
-  UPDATE_FRIEND_CHAT,
   UPDATE_LAST_MESSAGE,
 } from "../../redux/actions";
 
-import Avatar from "../../components/avatar/Avatar";
-import useCheckOnline from "../../hooks/useCheckOnline";
-import useFormatTime from "../../hooks/useFormatTime";
 
 import { imageUpload } from "../../helpers/image";
 import { addElment } from "../../helpers";
@@ -25,9 +21,7 @@ const ChatRoom = () => {
   const [messages, setMessages] = useState([]);
   const [hasTyping, setHasTyping] = useState(false);
 
-  const { conversationChat, friendChat } = useSelector((state) => state.chat);
-
-  const [isOnline, setIsOnline] = useCheckOnline(friendChat);
+  const { conversationChat } = useSelector((state) => state.chat);
 
   const { socket } = useSelector((state) => state.network);
 
@@ -35,17 +29,6 @@ const ChatRoom = () => {
   const { files } = useSelector((state) => state.message);
 
   const dispatch = useDispatch();
-  const time = useFormatTime(friendChat);
-
-
-
-  // useEffect(() => {
-  //   const element = document.getElementById("chat");
-
-  //   console.log("element.scrollHeight", element.scrollHeight);
-  //   element.scrollTop = element.scrollHeight;
-  //   console.log("element.scrollTop", element.scrollTop);
-  // }, [messages]);
 
   useEffect(() => {
     let isMount = true;
@@ -75,12 +58,12 @@ const ChatRoom = () => {
     };
 
     const updateFriendConversation = ({ userDisconnectId, time }) => {
-      if (friendChat?._id === userDisconnectId) {
-        dispatch({
-          type: UPDATE_FRIEND_CHAT,
-          payload: time,
-        });
-      }
+      // if (friendChat?._id === userDisconnectId) {
+      //   dispatch({
+      //     type: UPDATE_FRIEND_CHAT,
+      //     payload: time,
+      //   });
+      // }
     };
 
     socket.on("displayTyping", handleSetTyping);
@@ -137,6 +120,8 @@ const ChatRoom = () => {
           isRead: true,
         });
 
+        console.log('nhan duoc tin nhan')
+
         // setArrivalMessage(newMessage);
 
         setMessages(
@@ -158,13 +143,12 @@ const ChatRoom = () => {
     };
   }, [socket, conversationChat]);
 
-  const updateConversation = async ({ receiverId, conversationId, isRead }) => {
+  const updateConversation = async (data) => {
     try {
-      const response = await postDataAPI(`/conversation/update-conversation`, {
-        receiverId,
-        conversationId,
-        isRead,
-      });
+      const response = await postDataAPI(
+        `/conversation/update-conversation`,
+        data
+      );
 
       const { message } = response;
 
@@ -177,10 +161,6 @@ const ChatRoom = () => {
   const createNewMessage = async (text) => {
     if (!text && !files.length) return;
     try {
-      const receiverId = conversationChat.members.find(
-        (memberId) => memberId !== userCurrent._id
-      );
-
       const messageCreate = {
         conversationId: conversationChat?._id,
         senderId: userCurrent?._id,
@@ -195,9 +175,8 @@ const ChatRoom = () => {
       const { message, newMessage } = response;
 
       updateConversation({
-        receiverId,
         conversationId: conversationChat?._id,
-        isRead: false,
+        reads: [userCurrent?._id],
       });
 
       dispatch({
@@ -211,7 +190,7 @@ const ChatRoom = () => {
       });
 
       socket?.emit("sendMessage", {
-        receiverId,
+        receivers: conversationChat.members,
         newMessage,
       });
 
@@ -229,28 +208,36 @@ const ChatRoom = () => {
         {conversationChat && (
           <>
             <div className="pic">
-              <Avatar
-                user={friendChat}
-                width="64px"
-                height="64px"
-                link={false}
-              />
+              {conversationChat.images &&
+                (conversationChat.images.length === 1 ? (
+                  <img
+                    className="one-img"
+                    src={conversationChat.images[0].src}
+                    alt=""
+                  />
+                ) : (
+                  <div className="multiple-img">
+                    {conversationChat.images.map((img) => (
+                      <img src={img.src} key={img.key} />
+                    ))}
+                  </div>
+                ))}
             </div>
             <div className="contact-info">
-              <div className="name">{friendChat?.userName}</div>
-              <div className="seen">
+              <div className="name">{conversationChat.nameConversation}</div>
+              {/* <div className="seen">
                 {userCurrent?.friends.includes(friendChat?._id)
                   ? isOnline
                     ? "Active"
                     : "Active " + time + " ago"
                   : ""}
-              </div>
+              </div> */}
             </div>
             <Call />
           </>
         )}
       </div>
-      <div className="messages" id="chat" >
+      <div className="messages" id="chat">
         {conversationChat ? (
           <div className="messagesContainer">
             <DisplayMessage

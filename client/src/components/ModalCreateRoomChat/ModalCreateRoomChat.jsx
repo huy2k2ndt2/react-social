@@ -6,13 +6,13 @@ import {
   ADD_FRIEND_TO_ROOM,
   REMOVE_FRIEND_TO_ROOM,
   RESET_CREATE_ROOM,
-  SET_CREATE_ROOM,
   SET_LIST_FRIEND,
 } from "../../redux/actions";
 import { useSelector, useDispatch } from "react-redux";
 import { getDataAPI, postDataAPI } from "../../api/fetchData";
 import Avatar from "../avatar/Avatar";
 import { imageUpload } from "../../helpers/image";
+import { toast } from "react-toastify";
 
 const ModalCreateRoomChat = () => {
   const [file, setFile] = useState();
@@ -62,6 +62,14 @@ const ModalCreateRoomChat = () => {
   const handleSubmit = async () => {
     const data = {};
 
+    if (!nameRef.current.value) {
+      return toast.info(`Please enter name room chat`, { autoClose: 500 });
+    }
+
+    if (!friendAdds.length) {
+      return toast.info(`Please add members to room chat`, { autoClose: 500 });
+    }
+
     data.members = [
       userCurrent?._id,
       ...friendAdds.map((friend) => friend?._id),
@@ -78,15 +86,15 @@ const ModalCreateRoomChat = () => {
     data.name = nameRef.current.value;
     data.desc = descRef.current.value;
 
-    data.reads = [true, ...Array(friendAdds.length).fill(true)];
-    data.status = [true, ...Array(friendAdds.length).fill(false)];
+    data.reads = [userCurrent?._id, ...friendAdds.map((friend) => friend?._id)];
+    data.status = [userCurrent?._id];
     data.isMultiple = true;
 
     const { conversation } = await postDataAPI("/conversation", data);
 
     dispatch({
       type: ADD_CONVERSATION,
-      payload: conversation,
+      payload: { conversation },
     });
 
     handleCloseModal();

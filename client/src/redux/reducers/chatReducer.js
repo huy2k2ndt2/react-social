@@ -1,3 +1,4 @@
+import { addElment } from "../../helpers";
 import {
   UPDATE_LAST_MESSAGE,
   UPDATE_STATUS_CONVERSATION,
@@ -5,34 +6,60 @@ import {
   SET_CHAT,
   SET_CONVERSATION_CHAT,
   SET_LIST_CONVERSATION,
-  ADD_CONVERSATION,
-  ADD_STATUS_CONVERSATION,
-  DISPLAY_CONVERSATION_PENDING,
+  ADD_CONVERSATION_ACCEPTS,
+  SET_IS_SHOW,
   DISPLAY_CONVERSATION_ACCEPTS,
   UPDATE_CONVERSATION_DISPLAYS,
   UPDATE_FRIEND_CHAT,
   SET_NUMBER_UNREAD,
   INCREASE_NUMBER_UNREAD,
   DECREASE_NUMBER_UNREAD,
+  UPDATE_CONVERSATION,
+  ADD_CONVERSATION_PENDINGS,
+  ADD_CONVERSATION,
+  UPDATE_READ_CONVERSATION,
+  SET_NEW_CONVERSATION_CHAT,
 } from "../actions";
 
 const initialState = {
   lastMessageConversation: null,
-  statusConversations: [],
-  friendChat: null,
   isChat: false,
   number: 0,
-  conversationList: null,
   conversationChat: null,
-  conversationPendings: null,
-  conversationAccepts: null,
-  conversationDisplays: null,
+  conversationUnReads: [],
+  listConversation: [],
+  isShowConversationPending: false,
 };
 
 const chatReducer = (state = initialState, action) => {
   const { type, payload } = action;
 
   switch (type) {
+    case SET_IS_SHOW: {
+      return {
+        ...state,
+        isShowConversationPending: payload,
+      };
+    }
+
+    case UPDATE_CONVERSATION: {
+      const { conversationId, ...newInfo } = payload;
+
+      const { listConversation } = state;
+
+      return {
+        ...state,
+        listConversation: listConversation.map((conversation) =>
+          conversation._id === conversationId
+            ? {
+                ...conversation,
+                ...newInfo,
+              }
+            : conversation
+        ),
+      };
+    }
+
     case UPDATE_LAST_MESSAGE: {
       return {
         ...state,
@@ -55,13 +82,6 @@ const chatReducer = (state = initialState, action) => {
       };
     }
 
-    case ADD_STATUS_CONVERSATION: {
-      return {
-        ...state,
-        statusConversations: [payload, ...state.statusConversations],
-      };
-    }
-
     case SET_STATUS_CONVERSATION: {
       return {
         ...state,
@@ -73,44 +93,65 @@ const chatReducer = (state = initialState, action) => {
       return {
         ...state,
         ...payload,
+        number: 0,
       };
     }
 
     case SET_LIST_CONVERSATION: {
       const { userId, conversations } = payload;
-      const conversationAccepts = conversations.filter((conversation) => {
-        const idx = conversation.members.indexOf(userId);
-        return conversation.status[idx];
-      });
-      const conversationPendings = conversations.filter((conversation) => {
-        const idx = conversation.members.indexOf(userId);
-        return !conversation.status[idx];
+
+      const conversationUnReads = [];
+      conversations.forEach((conversation) => {
+        const { reads, status, _id } = conversation;
+
+        if (status.includes(userId)) {
+          if (!reads.includes(userId)) conversationUnReads.push(_id);
+        }
       });
 
       return {
         ...state,
-        conversationList: conversations,
-        conversationPendings,
-        conversationAccepts,
-        conversationDisplays: conversationAccepts,
+        listConversation: conversations,
+        conversationUnReads,
       };
     }
 
     case ADD_CONVERSATION: {
-      const isExit = state.conversationList.find(
-        (conversation) => conversation?._id === payload?._id
-      );
+      const { conversation } = payload;
 
-      if (isExit)
-        return {
-          ...state,
-        };
+      const { listConversation } = state;
 
       return {
         ...state,
-        conversationAccepts: [payload, ...state.conversationAccepts],
-        conversationDisplays: [payload, ...state.conversationAccepts],
-        conversationList: [payload, ...state.conversationList],
+        listConversation: addElment(
+          listConversation,
+          conversation,
+          (array, value) => array.find((el) => el._id !== value._id)
+        ),
+      };
+    }
+
+    case UPDATE_READ_CONVERSATION: {
+      const { conversationId, userId } = payload;
+
+      return {
+        ...state,
+        conversationAccepts: state.conversationAccepts.map((conversation) =>
+          conversation._id === conversationId
+            ? {
+                ...conversation,
+                reads: [...conversation.reads, userId],
+              }
+            : conversation
+        ),
+        conversationDisplays: state.conversationDisplays.map((conversation) =>
+          conversation._id === conversationId
+            ? {
+                ...conversation,
+                reads: [...conversation.reads, userId],
+              }
+            : conversation
+        ),
       };
     }
 
@@ -139,26 +180,28 @@ const chatReducer = (state = initialState, action) => {
     }
 
     case SET_CONVERSATION_CHAT: {
-      const { friend, ...conversation } = payload;
+      const { conversationChat, isChangeType } = payload;
 
+      const { isShowConversationPending, listConversation } = state;
       return {
         ...state,
-        conversationChat: conversation,
-        friendChat: friend,
+        listConversation: listConversation.map((conversation) =>
+          conversation._id === conversationChat._id
+            ? conversationChat
+            : conversation
+        ),
+        conversationChat,
+        isShowConversationPending: isChangeType
+          ? !isShowConversationPending
+          : isShowConversationPending,
       };
     }
 
-    case DISPLAY_CONVERSATION_PENDING: {
+    case SET_NEW_CONVERSATION_CHAT: {
+      const { conversationChat } = payload;
       return {
         ...state,
-        conversationDisplays: [...state.conversationPendings],
-      };
-    }
-
-    case DISPLAY_CONVERSATION_ACCEPTS: {
-      return {
-        ...state,
-        conversationDisplays: [...state.conversationAccepts],
+        conversationChat,
       };
     }
 
@@ -182,7 +225,7 @@ const chatReducer = (state = initialState, action) => {
     case INCREASE_NUMBER_UNREAD: {
       return {
         ...state,
-        number: state.number + 1,
+        conversationUnReads: addElment(state.conversationUnReads, payload),
       };
     }
 

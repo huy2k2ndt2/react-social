@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import {
   ADD_CONVERSATION,
+  ADD_CONVERSATION_ACCEPTS,
   ADD_STATUS_CONVERSATION,
   SET_CHAT,
   SET_CONVERSATION_CHAT,
+  SET_NEW_CONVERSATION_CHAT,
 } from "../../redux/actions";
 import { useDispatch, useSelector } from "react-redux";
 import { getDataAPI } from "../../api/fetchData";
@@ -13,15 +15,15 @@ const ButtonMessage = () => {
 
   const { userProfile, isFriend } = useSelector((state) => state.profile);
 
-  const { conversationList, isChat, conversationChat } = useSelector(
+  const { listConversation, isChat, conversationChat } = useSelector(
     (state) => state.chat
   );
 
   useEffect(() => {
-    if (isClick && isChat && conversationList) {
+    if (isClick && isChat && listConversation) {
       handleSetConversationChat();
     }
-  }, [isChat, conversationList, isClick]);
+  }, [isChat, listConversation, isClick]);
 
   const handleSetConversationChat = async () => {
     if (!userProfile) return;
@@ -36,25 +38,16 @@ const ButtonMessage = () => {
 
       if (conversation?._id === conversationChat?._id) return;
 
-      if (!conversationList?.find((item) => item?._id === conversation?._id)) {
+      if (!listConversation?.find((item) => item?._id === conversation?._id)) {
         dispatch({
           type: ADD_CONVERSATION,
-          payload: conversation,
-        });
-        dispatch({
-          type: ADD_STATUS_CONVERSATION,
-          payload: {
-            conversationId: conversation?._id,
-            isRead: true,
-          },
+          payload: { conversation },
         });
       }
-      // toast.success(message, { autoClose: 2000 });
-      // setCurrentChat(conversation);
 
       dispatch({
-        type: SET_CONVERSATION_CHAT,
-        payload: conversation,
+        type: SET_NEW_CONVERSATION_CHAT,
+        payload: { conversationChat: conversation },
       });
     } catch (err) {
       console.log("err", err);

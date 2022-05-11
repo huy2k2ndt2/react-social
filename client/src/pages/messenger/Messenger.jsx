@@ -11,17 +11,17 @@ import ModalCreateRoomChat from "../../components/ModalCreateRoomChat/ModalCreat
 
 import {
   SET_LIST_CONVERSATION,
-  UPDATE_STATUS_CONVERSATION,
   SET_CONVERSATION_CHAT,
-  UPDATE_CONVERSATION_DISPLAYS,
 } from "../../redux/actions/chatActions";
 import { toast } from "react-toastify";
 import { SET_CREATE_ROOM } from "../../redux/actions";
 
 export default function Messenger() {
+  const [conversationDisplays, setConversationDisplays] = useState([]);
+
   const { userCurrent } = useSelector((state) => state.auth);
   const { isCreate } = useSelector((state) => state.createRoomChat);
-  const { conversationChat, conversationDisplays, conversationAccepts } =
+  const { conversationChat, listConversation, isShowConversationPending } =
     useSelector((state) => state.chat);
 
   const dispatch = useDispatch();
@@ -71,65 +71,64 @@ export default function Messenger() {
   }, [userCurrent]);
 
   useEffect(() => {
-    const handleUpdateConversation = async () => {
-      try {
-        const idx = conversationChat?.members.indexOf(userCurrent?._id);
-        if (!conversationChat.reads[idx]) {
-          const response = await postDataAPI(
-            `/conversation/update-conversation`,
-            {
-              userId: userCurrent?._id,
-              conversationId: conversationChat?._id,
-              isRead: true,
-            }
-          );
+    if (!listConversation || !userCurrent) return;
 
-          const { message } = response;
-        }
+    const { _id } = userCurrent;
 
-        if (!conversationChat.status[idx]) {
-          const response = await postDataAPI(
-            `/conversation/update-conversation`,
-            {
-              userId: userCurrent?._id,
-              conversationId: conversationChat?._id,
-              isStatus: true,
-            }
-          );
+    let data;
 
-          const { message } = response;
-        }
-
-        // toast.success(message, { autoClose: 2000 });
-      } catch (err) {
-        console.log("err", err);
-      }
-    };
-
-    if (conversationChat) {
-      handleUpdateConversation();
+    if (isShowConversationPending) {
+      data = listConversation.filter(
+        (conversation) => !conversation.status.includes(_id)
+      );
+    } else {
+      data = listConversation.filter((conversation) =>
+        conversation.status.includes(_id)
+      );
     }
-  }, [conversationChat]);
+
+    setConversationDisplays(data);
+  }, [listConversation, isShowConversationPending, userCurrent]);
 
   const handleChosseCurrentChat = async (conversation) => {
-    if (!conversationAccepts.find((el) => el?._id === conversation?._id)) {
+    if (!conversationChat || conversation?._id !== conversationChat._id) {
+      const { _id } = userCurrent;
+      const { status, reads } = conversation;
+
+      const dataUpdate = {};
+      let isChangeType = false;
+
+      if (!status.includes(_id)) {
+        isChangeType = true;
+
+        dataUpdate.status = [...status, _id];
+      }
+
+      if (!reads.includes(_id)) {
+        dataUpdate.reads = [...reads, _id];
+      }
+
+      if (Object.entries(dataUpdate).length) {
+        const response = await postDataAPI(
+          "/conversation/update-conversation",
+          {
+            conversationId: conversation?._id,
+            ...dataUpdate,
+          }
+        );
+      }
+
       dispatch({
-        type: UPDATE_CONVERSATION_DISPLAYS,
-        payload: conversation,
+        type: SET_CONVERSATION_CHAT,
+        payload: {
+          conversationChat: {
+            ...conversation,
+            ...dataUpdate,
+          },
+          isChangeType,
+        },
       });
     }
-    dispatch({
-      type: SET_CONVERSATION_CHAT,
-      payload: conversation,
-    });
-
-    dispatch({
-      type: UPDATE_STATUS_CONVERSATION,
-      payload: {
-        conversationId: conversation?._id,
-        isRead: true,
-      },
-    });
   };
 
   return (
@@ -161,7 +160,6 @@ export default function Messenger() {
                   className="contact"
                   key={conversation?._id}
                   onClick={() => {
-                    // setConversationChat(conversation);
                     handleChosseCurrentChat(conversation);
                   }}
                 >

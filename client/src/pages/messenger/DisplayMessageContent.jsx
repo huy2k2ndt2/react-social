@@ -1,8 +1,28 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
 const DisplayMessageContent = ({ message }) => {
+  const [user, setUser] = useState();
+
+  const {
+    conversationChat: { listMembers },
+  } = useSelector((state) => state.chat);
   const { userCurrent } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    if (!message || !listMembers) return;
+
+    let userSend;
+    if (message.senderId === userCurrent?._id) userSend = { ...userCurrent };
+    else {
+      userSend = listMembers.find((member) => member?._id === message.senderId);
+    }
+
+    setUser({
+      profilePicture: userSend.profilePicture,
+      userName: userSend.userName,
+    });
+  }, [message, listMembers, userCurrent]);
 
   return (
     <>

@@ -1,21 +1,48 @@
 import { Chat } from "@material-ui/icons";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Messenger from "../../pages/messenger/Messenger";
 import {
+  INCREASE_NUMBER_UNREAD,
   SET_CHAT,
   SET_NUMBER_UNREAD,
-  UPDATE_STATUS_CONVERSATION,
 } from "../../redux/actions";
 
 const IconMessage = () => {
-  const { number, isChat, statusConversations, conversationChat } = useSelector(
-    (state) => state.chat
-  );
+  const [number, setNumber] = useState(0);
+
+  const { isChat, conversationUnReads } = useSelector((state) => state.chat);
 
   const { socket } = useSelector((state) => state.network);
+  const { conversationChat } = useSelector((state) => state.chat);
 
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (!conversationUnReads) return;
+
+    setNumber(conversationUnReads.length);
+  }, [conversationUnReads]);
+
+  useEffect(() => {
+    const updateNumberConversationUnRead = ({ newMessage }) => {
+      const { conversationId } = newMessage;
+
+      if (!conversationChat || conversationChat?._id !== conversationId) {
+        if (!conversationUnReads.includes(conversationId)) {
+          dispatch({
+            type: INCREASE_NUMBER_UNREAD,
+          });
+        }
+      }
+    };
+
+    socket?.on("getMessage", updateNumberConversationUnRead);
+
+    return () => {
+      socket?.off("getMessage", updateNumberConversationUnRead);
+    };
+  }, [socket, conversationUnReads , conversationChat]);
 
   const toogleMessage = () => {
     const data = {
@@ -31,42 +58,6 @@ const IconMessage = () => {
       payload: data,
     });
   };
-
-  useEffect(() => {
-    if (!statusConversations) return;
-    const number =
-      statusConversations?.reduce(
-        (previousValue, conversation) =>
-          conversation.isRead ? previousValue : previousValue + 1,
-        0
-      ) || 0;
-
-    dispatch({
-      type: SET_NUMBER_UNREAD,
-      payload: number,
-    });
-  }, [statusConversations]);
-  useEffect(() => {
-    const updateStatusConversation = ({ newMessage }) => {
-      const { conversationId } = newMessage;
-
-      if (!conversationChat || conversationId !== conversationChat._id) {
-        dispatch({
-          type: UPDATE_STATUS_CONVERSATION,
-          payload: {
-            conversationId,
-            isRead: false,
-          },
-        });
-      }
-    };
-
-    socket?.on("getMessage", updateStatusConversation);
-
-    return () => {
-      socket?.off("getMessage", updateStatusConversation);
-    };
-  }, [socket, conversationChat]);
 
   return (
     <>

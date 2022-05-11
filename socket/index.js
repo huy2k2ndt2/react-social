@@ -328,15 +328,21 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("sendMessage", ({ newMessage, receiverId }) => {
-    const receiver = findUser(receiverId);
+  socket.on("sendMessage", ({ newMessage, receivers }) => {
+    console.log("users", users);
 
-    if (receiver) {
-      io.to(receiver.socketId).emit("getMessage", {
-        receiverId,
-        newMessage,
-      });
-    }
+    receivers.forEach((receiverId) => {
+      const receiver = findUser(receiverId);
+
+      console.log("receiver", receiver);
+
+      if (receiver) {
+        io.to(receiver.socketId).emit("getMessage", {
+          receiverId,
+          newMessage,
+        });
+      }
+    });
   });
 
   //call
