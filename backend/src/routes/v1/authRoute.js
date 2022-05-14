@@ -10,6 +10,6 @@ authRouter.post("/login", authController.login);
 
 authRouter.delete("/logout", vertifyToken, authController.logout);
 
-authRouter.post("/refresh-token", authController.handleRefreshToken);
+authRouter.get("/refresh-token", authController.handleRefreshToken);
 
 module.exports = authRouter;

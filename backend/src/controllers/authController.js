@@ -3,8 +3,6 @@ const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
-const refreshTokenList = [];
-
 const generateToken = (id) => {
   const accessToken = jwt.sign(
     {
@@ -12,7 +10,7 @@ const generateToken = (id) => {
     },
     process.env.ACCESS_TOKEN_KEY,
     {
-      expiresIn: "1h",
+      expiresIn: "5s",
     }
   );
 
@@ -25,8 +23,6 @@ const generateToken = (id) => {
       expiresIn: "2h",
     }
   );
-
-  refreshTokenList.push(refreshToken);
 
   return {
     accessToken,
@@ -86,8 +82,8 @@ const authController = {
 
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
-        path: "/v1/auth/refresh-token",
-        maxAge: 60 * 60,
+        path: "/v1/api/auth/refresh-token",
+        maxAge: 2 * 60 * 60 * 1000,
       });
 
       const { password: passwordUserLogin, ...userInfo } = userLogin._doc;
@@ -96,7 +92,6 @@ const authController = {
         message: "Login Success",
         user: userInfo,
         accessToken,
-        refreshToken,
       });
     } catch (err) {
       next(err);
@@ -105,9 +100,7 @@ const authController = {
 
   logout: async (req, res, next) => {
     try {
-      res.clearCookie("refreshToken");
-
-      refreshTokenList.filter((el) => el !== refreshToken);
+      res.clearCookie("refreshToken", { path: "/v1/api/auth/refresh-token" });
 
       res.json({
         message: "Logout Success",
@@ -119,9 +112,8 @@ const authController = {
 
   handleRefreshToken: async (req, res, next) => {
     try {
-      // const refreshToken = req.cookies.refreshToken;
-
-      const { refreshToken } = req.body;
+      const refreshToken = req.cookies.refreshToken;
+      console.log("refreshToken", refreshToken);
 
       if (!refreshToken) {
         throw new Error("Invalid refresh token");
@@ -132,26 +124,22 @@ const authController = {
         process.env.REFRESH_TOKEN_KEY
       );
 
-      // || !refreshTokenList.includes(refreshToken)
       if (!userId) {
         throw new Error("Invalid refresh token");
       }
-
-      // refreshTokenList.filter((el) => el !== refreshToken);
 
       const { accessToken, refreshToken: newRefreshToken } =
         generateToken(userId);
 
       res.cookie("refreshToken", newRefreshToken, {
         httpOnly: true,
-        path: "/v1/auth/refresh-token",
-        maxAge: 60 * 60,
+        path: "/v1/api/auth/refresh-token",
+        maxAge: 2 * 60 * 60 * 1000,
       });
 
       res.json({
         message: "Refresh token Success",
         newAccessToken: accessToken,
-        newRefreshToken,
       });
     } catch (err) {
       next(err);

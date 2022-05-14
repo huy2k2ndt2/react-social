@@ -21,8 +21,6 @@ configUploadFile(app);
 //config peer severr
 const peerServer = PeerServer({ port: 9000, path: "/" });
 
-// app.use(cors());
-
 app.use(
   cors({
     origin: "*",

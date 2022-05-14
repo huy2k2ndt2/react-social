@@ -11,7 +11,7 @@ export const login = (userInfo, navigate) => async (dispatch) => {
 
   try {
     const response = await axios.post("/auth/login", userInfo);
-    const { user, message, accessToken, refreshToken } = response.data;
+    const { user, message, accessToken } = response.data;
 
     toast.success(message, { autoClose: 500 });
 
@@ -20,10 +20,7 @@ export const login = (userInfo, navigate) => async (dispatch) => {
       payload: user,
     });
 
-    localStorage.setItem("refresh-token", JSON.stringify(refreshToken));
     localStorage.setItem("access-token", JSON.stringify(accessToken));
-
-    localStorage.setItem("userId", JSON.stringify(user?._id));
 
     navigate("/");
   } catch (err) {

@@ -3,7 +3,7 @@ require("dotenv").config();
 
 const vertifyToken = (req, res, next) => {
   try {
-    const authorization = req.headers["authorization"];
+    const authorization = req.header("Authorization");
 
     const accessToken = authorization.split(" ")[1];
 

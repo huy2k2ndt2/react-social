@@ -5,9 +5,22 @@ import jwt_decode from "jwt-decode";
 
 const instance = axios.create({
   baseURL: "http://localhost:8080/v1/api",
-  // withCredentials: true,
-  // credentials: "include",
 });
+
+let refreshTokenRequest = null;
+const handleRefreshToken = async () => {
+  try {
+    const response = await axios.get(
+      "http://localhost:8080/v1/api/auth/refresh-token",
+      {
+        withCredentials: true,
+      }
+    );
+    return response;
+  } catch (err) {
+    throw err;
+  }
+};
 
 instance.interceptors.request.use(
   async (request) => {
@@ -23,21 +36,15 @@ instance.interceptors.request.use(
     const { exp } = jwt_decode(accessToken);
 
     if (exp < date.getTime() / 1000) {
-      // axios.defaults.withCredentials = true;
-      // axios.defaults.credentials = "include";
-
-      const refreshToken = JSON.parse(localStorage.getItem("refresh-token"));
-
       try {
-        const response = await axios.post(
-          "http://localhost:8080/v1/api/auth/refresh-token",
-          {
-            refreshToken,
-          }
-        );
+        refreshTokenRequest = refreshTokenRequest
+          ? refreshTokenRequest
+          : handleRefreshToken();
 
-        const { newAccessToken, newRefreshToken } = response.data;
-        localStorage.setItem("refresh-token", JSON.stringify(newRefreshToken));
+        const response = await refreshTokenRequest;
+
+        const { newAccessToken } = response.data;
+
         localStorage.setItem("access-token", JSON.stringify(newAccessToken));
 
         accessToken = newAccessToken;
